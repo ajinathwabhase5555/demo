@@ -1,0 +1,229 @@
+/**
+ * 
+ */
+package com.bomweb.model;
+
+import java.sql.Blob;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+/**
+ * @author SACHIN
+ *
+ */
+@Entity
+@Table(name = "ekycotp_reqrsp")
+public class EKYCOTPReqRsp {
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "EKYCOTP_SEQ")
+	@SequenceGenerator(name = "EKYCOTP_SEQ", sequenceName = "EKYCOTP_SEQ", allocationSize = 0)
+	@Column(name = "LOG_ID")
+	private int id;
+	@Column(name = "TRN_DATE")
+	@Temporal(TemporalType.DATE)
+	private Date currentDate;
+	@Column(name = "REQDMP")
+	private Blob requestDmp;
+	@Column(name = "RSPDMP")
+	private Blob responsDmp;
+	@Column(name = "AGENTID")
+	private String agentID;
+	@Column(name = "PROCESSINGCODE")
+	private String processingCode;
+	@Column(name = "TXN_DATETIME")
+	private String txnDateTime;
+	@Column(name = "RRN")
+	private String rrn;
+	@Column(name = "RSPRRN")
+	private String rspRRN;
+	@Column(name = "RESPONSECODE")
+	private String responseCode;
+	@Column(name = "RESPONSEMSG")
+	private String responseMsg;
+	@Transient
+	private byte[] otpReq;
+
+	/**
+	 * @return the id
+	 */
+	public int getId() {
+		return id;
+	}
+
+	/**
+	 * @param id
+	 *            the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	/**
+	 * @return the currentDate
+	 */
+	public Date getCurrentDate() {
+		return currentDate;
+	}
+
+	/**
+	 * @param currentDate
+	 *            the currentDate to set
+	 */
+	public void setCurrentDate(Date currentDate) {
+		this.currentDate = currentDate;
+	}
+
+	/**
+	 * @return the requestDmp
+	 */
+	public Blob getRequestDmp() {
+		return requestDmp;
+	}
+
+	/**
+	 * @param requestDmp
+	 *            the requestDmp to set
+	 */
+	public void setRequestDmp(Blob requestDmp) {
+		this.requestDmp = requestDmp;
+	}
+
+	/**
+	 * @return the responsDmp
+	 */
+	public Blob getResponsDmp() {
+		return responsDmp;
+	}
+
+	/**
+	 * @param responsDmp
+	 *            the responsDmp to set
+	 */
+	public void setResponsDmp(Blob responsDmp) {
+		this.responsDmp = responsDmp;
+	}
+
+	/**
+	 * @return the agentID
+	 */
+	public String getAgentID() {
+		return agentID;
+	}
+
+	/**
+	 * @param agentID
+	 *            the agentID to set
+	 */
+	public void setAgentID(String agentID) {
+		this.agentID = agentID;
+	}
+
+	/**
+	 * @return the processingCode
+	 */
+	public String getProcessingCode() {
+		return processingCode;
+	}
+
+	/**
+	 * @param processingCode
+	 *            the processingCode to set
+	 */
+	public void setProcessingCode(String processingCode) {
+		this.processingCode = processingCode;
+	}
+
+	/**
+	 * @return the txnDateTime
+	 */
+	public String getTxnDateTime() {
+		return txnDateTime;
+	}
+
+	/**
+	 * @param txnDateTime
+	 *            the txnDateTime to set
+	 */
+	public void setTxnDateTime(String txnDateTime) {
+		this.txnDateTime = txnDateTime;
+	}
+
+	/**
+	 * @return the rrn
+	 */
+	public String getRrn() {
+		return rrn;
+	}
+
+	/**
+	 * @param rrn
+	 *            the rrn to set
+	 */
+	public void setRrn(String rrn) {
+		this.rrn = rrn;
+	}
+
+	/**
+	 * @return the rspRRN
+	 */
+	public String getRspRRN() {
+		return rspRRN;
+	}
+
+	/**
+	 * @param rspRRN
+	 *            the rspRRN to set
+	 */
+	public void setRspRRN(String rspRRN) {
+		this.rspRRN = rspRRN;
+	}
+
+	/**
+	 * @return the responseCode
+	 */
+	public String getResponseCode() {
+		return responseCode;
+	}
+
+	/**
+	 * @param responseCode
+	 *            the responseCode to set
+	 */
+	public void setResponseCode(String responseCode) {
+		this.responseCode = responseCode;
+	}
+
+	/**
+	 * @return the responseMsg
+	 */
+	public String getResponseMsg() {
+		return responseMsg;
+	}
+
+	/**
+	 * @param responseMsg
+	 *            the responseMsg to set
+	 */
+	public void setResponseMsg(String responseMsg) {
+		this.responseMsg = responseMsg;
+	}
+
+	public byte[] getOtpReq() {
+		return otpReq;
+	}
+
+	public void setOtpReq(byte[] otpReq) {
+		this.otpReq = otpReq;
+	}
+
+}

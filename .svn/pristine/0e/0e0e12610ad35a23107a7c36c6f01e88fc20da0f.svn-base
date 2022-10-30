@@ -1,0 +1,470 @@
+/**
+ * 
+ */
+package com.bomweb.bbps;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.sql.Blob;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.sql.rowset.serial.SerialBlob;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
+import org.hibernate.Session;
+
+import com.bomweb.bbps.xml.BBPSPayResponse;
+import com.bomweb.bbps.xml.BBPSResponse;
+import com.bomweb.bbps.xml.BillStatusResponse;
+import com.bomweb.model.FetchBill;
+import com.bomweb.model.PayBill;
+import com.bomweb.model.PaymentStatus;
+import com.bomweb.service.model.BBPSIN;
+import com.bomweb.service.model.BBPSOUT;
+import com.bomweb.util.HibernateUtil;
+
+/**
+ * @author SACHIN
+ *
+ */
+public class BBPSService {
+
+	static Log log = LogFactory.getLog(BBPSService.class);
+
+	/**
+	 * @param in
+	 * @param out
+	 * @return
+	 */
+	public static BBPSOUT fetchBillRequest(BBPSIN in, BBPSOUT out) {
+		FetchBill fetchBill = saveFetchBillReq(in);
+		byte[] response = initiateRequest("Fetch Bill", fetchBill.getBillReq());
+		try {
+			if (response.length != 0) {
+				fetchBill = saveBillResponse(fetchBill, response);
+				out.setResponseCode(fetchBill.getResponseCode());
+				out.setResponseDesc(fetchBill.getResponseDesc());
+				out.setRrn(fetchBill.getRspRRN());
+				out.setBillerID(fetchBill.getBillerID());
+				out.setBillAmount(fetchBill.getRspBillAmount());
+				out.setBillDate(fetchBill.getRspBillDate());
+				out.setBillDueDate(fetchBill.getRspBillDueDate());
+				out.setBillerID(fetchBill.getRspBillerID());
+				out.setErrorCode(fetchBill.getErrorCode());
+				out.setErrorDesc(fetchBill.getErrorDesc());
+				out.setPartialPayment(fetchBill.getRspPartialPayment());
+				out.setPayWithoutBill(fetchBill.getRspPayWithOutBill());
+				out.setValid(fetchBill.getRspValid());
+				out.setFiller1(fetchBill.getRspFiller1());
+			} else {
+				out.setResponseCode("91");
+			}
+		} catch (Exception e) {
+			out.setResponseCode("91");
+		}
+		return out;
+	}
+
+	/**
+	 * @param in
+	 * @param out
+	 * @return
+	 */
+	public static BBPSOUT payBillRequest(BBPSIN in, BBPSOUT out) {
+		PayBill payBill = savePayBillReq(in);
+		byte[] response = initiateRequest("Pay Bill Req", in.getReqByte());
+		try {
+			if (response != null) {
+				payBill = savePayBillResponse(payBill, response);
+				out.setBbpsReferenceNo(payBill.getBbpsReferenceNo());
+				out.setCustomerId(payBill.getAuth1());
+				out.setErrorCode(payBill.getErrCode());
+				out.setReason(payBill.getReason());
+				out.setRequestId(payBill.getRequestID());
+				out.setTimestamp(payBill.getTimeStamp());
+				out.setTransactionId(payBill.getTransactionID());
+				out.setValid(payBill.getValid());
+				out.setFiller1(payBill.getRspFiller1());
+			} else {
+				out.setResponseCode("91");
+			}
+		} catch (Exception e) {
+			out.setResponseCode("91");
+		}
+		return out;
+	}
+
+	/**
+	 * @param payBill
+	 * @param response
+	 * @return
+	 */
+	private static PayBill savePayBillResponse(PayBill payBill, byte[] response) {
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		try {
+			File xmlFile = new File("E://BOM/Enrollment/BBPS/PayBillResponse_" + payBill.getRrn() + ".xml");
+			if (xmlFile.exists())
+				xmlFile.delete();
+			xmlFile.createNewFile();
+			FileOutputStream fileOutputStream = new FileOutputStream(xmlFile);
+			fileOutputStream.write(response);
+			fileOutputStream.close();
+			JAXBContext context = JAXBContext.newInstance(BBPSPayResponse.class);
+			Unmarshaller unmarshaller = context.createUnmarshaller();
+			BBPSPayResponse responseXML = (BBPSPayResponse) unmarshaller.unmarshal(xmlFile);
+
+			Blob rsp = new SerialBlob(response);
+			payBill.setResponseMsg(rsp);
+			payBill.setRspRRN(responseXML.getTxnInfo().getRrn());
+			payBill.setErrCode(responseXML.getResponse().getErrorMessages().getErrCode());
+			payBill.setErrDesc(responseXML.getResponse().getErrorMessages().getErrDesc());
+			payBill.setResponseCode(responseXML.getBillPayHeader().getRespCode());
+			payBill.setResponseDesc(responseXML.getBillPayHeader().getRespDesc());
+			payBill.setBbpsReferenceNo(responseXML.getResponse().getBbpsReferenceNo());
+			payBill.setRspFiller1(responseXML.getResponse().getFillers().getFiller().get(0) + "");
+			payBill.setRspFiller2(responseXML.getResponse().getFillers().getFiller().get(1) + "");
+			payBill.setReason(responseXML.getResponse().getReason());
+			payBill.setRequestID(responseXML.getResponse().getRequestId());
+			payBill.setTimeStamp(responseXML.getResponse().getTimeStamp());
+			payBill.setTransactionID(responseXML.getResponse().getTransactionId());
+			payBill.setValid(responseXML.getResponse().getValid());
+
+			session.beginTransaction();
+			session.saveOrUpdate(payBill);
+			session.getTransaction().commit();
+			// xmlFile.delete();
+		} catch (SQLException ex) {
+			session.getTransaction().rollback();
+			ex.printStackTrace();
+		} catch (JAXBException e) {
+			e.printStackTrace();
+		} catch (IOException exception) {
+			exception.printStackTrace();
+		}
+
+		return payBill;
+	}
+
+	/**
+	 * @param in
+	 * @return
+	 */
+	private static PayBill savePayBillReq(BBPSIN in) {
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		PayBill payBill = new PayBill();
+		try {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+			String date = dateFormat.format(new Date());
+			payBill.setCurrentDate(dateFormat.parse(date));
+			Blob iso = new SerialBlob(in.getReqByte());
+			payBill.setRequestMsg(iso);
+			payBill.setAgentID(in.getAgentID());
+			payBill.setAuth1(in.getAuth1());
+			payBill.setAuth2(in.getAuth2());
+			payBill.setPosCode(in.getPosCode());
+			payBill.setPosEntryMode(in.getPosEntryMode());
+			payBill.setBillDate(in.getBillDate());
+			payBill.setBillDueDate(in.getBillDueDate());
+			payBill.setBillerAccountId(in.getBillerAccountId());
+			payBill.setBillerID(in.getBillerID());
+			payBill.setPaymentAmount(in.getPaymentAmount());
+			payBill.setProcessingCode(in.getProcessingCode());
+			payBill.setRequestID(in.getReqID());
+			payBill.setRrn(in.getRrn());
+			payBill.setShortName(in.getShortName());
+			payBill.setTransactionDateTime(in.getTxnDateTime());
+			payBill.setTerminalID(in.getTerminalID());
+			payBill.setBillReq(in.getReqByte());
+			session.beginTransaction();
+			session.saveOrUpdate(payBill);
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			log.error(e);
+			e.printStackTrace();
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
+		}
+		return payBill;
+	}
+
+	/**
+	 * @param in
+	 * @return
+	 */
+	private static FetchBill saveFetchBillReq(BBPSIN in) {
+
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		FetchBill fetchBill = new FetchBill();
+		try {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+			String date = dateFormat.format(new Date());
+			fetchBill.setCurrentDate(dateFormat.parse(date));
+			Blob iso = new SerialBlob(in.getReqByte());
+			fetchBill.setRequestMsg(iso);
+			fetchBill.setProcessingCode(in.getProcessingCode());
+			fetchBill.setTransactionDateTime(in.getTxnDateTime());
+			fetchBill.setPosCode(in.getPosCode());
+			fetchBill.setPosEntryMode(in.getPosEntryMode());
+			fetchBill.setRrn(in.getRrn());
+			fetchBill.setPosEntryMode("019");
+			fetchBill.setPosCode("05");
+			fetchBill.setUidorvid(in.getUid_vid());
+			fetchBill.setTerminalID(in.getTerminalID());
+			fetchBill.setAgentID(in.getAgentID());
+			fetchBill.setBillerID(in.getBillerID());
+			fetchBill.setReqID(in.getReqID());
+			fetchBill.setFiller1(in.getFiller1());
+			fetchBill.setFiller2(in.getFiller2());
+			fetchBill.setFiller3(in.getFiller3());
+			fetchBill.setAuth1(in.getAuth1());
+			fetchBill.setAuth2(in.getAuth2());
+			fetchBill.setAuth3(in.getAuth3());
+			fetchBill.setBillReq(in.getReqByte());
+			fetchBill.setAadhaarNo("XXXXXXXX" + in.getAadhaarNo().substring(in.getAadhaarNo().length() - 4));
+			session.beginTransaction();
+			session.saveOrUpdate(fetchBill);
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			log.error(e);
+			e.printStackTrace();
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
+		}
+		return fetchBill;
+	}
+
+	/**
+	 * @param fetchBill
+	 * @param response
+	 * @return
+	 */
+	private static FetchBill saveBillResponse(FetchBill fetchBill, byte[] response) {
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		try {
+			File xmlFile = new File("E://BOM/Enrollment/BBPS/FetchBillResponse_" + fetchBill.getRrn() + ".xml");
+			if (xmlFile.exists())
+				xmlFile.delete();
+			xmlFile.createNewFile();
+			FileOutputStream fileOutputStream = new FileOutputStream(xmlFile);
+			fileOutputStream.write(response);
+			fileOutputStream.close();
+			JAXBContext context = JAXBContext.newInstance(BBPSResponse.class);
+			Unmarshaller unmarshaller = context.createUnmarshaller();
+			BBPSResponse responseXML = (BBPSResponse) unmarshaller.unmarshal(xmlFile);
+
+			Blob rsp = new SerialBlob(response);
+			fetchBill.setResponseMsg(rsp);
+			fetchBill.setRspRRN(responseXML.getTxnInfo().getRrn());
+			fetchBill.setResponseCode(responseXML.getBillPayHeader().getRespCode());
+			fetchBill.setResponseDesc(responseXML.getBillPayHeader().getRespDesc());
+			if (responseXML.getBillPayHeader().getRespCode().equals("25")) {
+				fetchBill.setErrorCode(responseXML.getResponse().getErrorMessages().getErrCode());
+				fetchBill.setErrorDesc(responseXML.getResponse().getErrorMessages().getErrDesc());
+				fetchBill.setRspBillerID(responseXML.getTxnInfo().getBillerId());
+				fetchBill.setRspBillAmount(responseXML.getResponse().getBillamount());
+				fetchBill.setRspBillDate(responseXML.getResponse().getBilldate());
+				fetchBill.setRspBillDueDate(responseXML.getResponse().getBillduedate());
+				fetchBill.setRspPartialPayment(responseXML.getResponse().getPartialPayment());
+				fetchBill.setRspPayWithOutBill(responseXML.getResponse().getPayWithoutBill());
+				fetchBill.setRspRequestID(responseXML.getResponse().getRequestId());
+				fetchBill.setRspValid(responseXML.getResponse().getValid());
+				fetchBill.setRspAuth1(responseXML.getResponse().getFields().getAuth().get(0) + "");
+				fetchBill.setRspAuth2(responseXML.getResponse().getFields().getAuth().get(1) + "");
+				fetchBill.setRspAuth3(responseXML.getResponse().getFields().getAuth().get(2) + "");
+				fetchBill.setRspFiller1(responseXML.getResponse().getFillers().getFiller().get(0) + "");
+				fetchBill.setRspFiller2(responseXML.getResponse().getFillers().getFiller().get(1) + "");
+				fetchBill.setRspFiller3(responseXML.getResponse().getFillers().getFiller().get(2) + "");
+			}
+			session.beginTransaction();
+			session.saveOrUpdate(fetchBill);
+			session.getTransaction().commit();
+			// xmlFile.delete();
+		} catch (SQLException ex) {
+			session.getTransaction().rollback();
+			ex.printStackTrace();
+		} catch (JAXBException e) {
+			e.printStackTrace();
+		} catch (Exception exception) {
+			exception.printStackTrace();
+		}
+
+		return fetchBill;
+	}
+
+	/**
+	 * @param reqType
+	 * @param billByte
+	 * @return
+	 */
+	private static byte[] initiateRequest(String reqType, byte[] billByte) {
+
+		log.info("*********" + reqType + "********" + new String(billByte));
+		byte[] response = null;
+		try {
+			SSLContextBuilder builder = new SSLContextBuilder();
+			builder.loadTrustMaterial(null, new TrustStrategy() {
+				@Override
+				public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+					return true;
+				}
+			});
+
+			SSLConnectionSocketFactory sslSF = new SSLConnectionSocketFactory(builder.build(),
+					NoopHostnameVerifier.INSTANCE);
+			HttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslSF).build();
+
+			HttpEntity entity = MultipartEntityBuilder.create()
+					.addBinaryBody("req.txt", billByte, ContentType.MULTIPART_FORM_DATA, "req.txt").build();
+			HttpPost httpPost = new HttpPost("http://125.18.108.188:7003/Servlet/BillingRequestServlet");
+			httpPost.setEntity(entity);
+			HttpResponse httpResponse = httpClient.execute(httpPost);
+
+			HttpEntity responseEntity = httpResponse.getEntity();
+			int statusCode = httpResponse.getStatusLine().getStatusCode();
+			System.out.println("Status Code : " + statusCode);
+			if (statusCode == HttpStatus.SC_OK) {
+				String rsp = EntityUtils.toString(responseEntity, "UTF-8");
+				System.out.println("Response from Bank : " + rsp);
+				response = rsp.getBytes();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	/**
+	 * @param in
+	 * @param out
+	 * @return
+	 */
+	public static BBPSOUT checkBillStatus(BBPSIN in, BBPSOUT out) {
+		PaymentStatus status = savePaymentStatusReq(in);
+		byte[] response = initiateRequest("Payment Status", in.getReqByte());
+		try {
+			if (response != null) {
+				status = savePayStatusResponse(status, response);
+				out.setBbpsReferenceNo(status.getBbpsReferenceNo());
+				out.setErrorCode(status.getErrCode());
+				out.setErrorDesc(status.getErrDesc());
+				out.setRequestId(status.getRequestID());
+				out.setTimestamp(status.getTimeStamp());
+				out.setTransactionId(status.getTransactionID());
+				out.setFiller1(status.getRspFiller1());
+			} else {
+				out.setResponseCode("91");
+			}
+		} catch (Exception e) {
+			out.setResponseCode("91");
+		}
+		return out;
+	}
+
+	/**
+	 * @param status
+	 * @param response
+	 * @return
+	 */
+	private static PaymentStatus savePayStatusResponse(PaymentStatus status, byte[] response) {
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		try {
+			File xmlFile = new File("E://BOM/Enrollment/BBPS/PaymentStatusResponse_" + status.getRrn() + ".xml");
+			if (xmlFile.exists())
+				xmlFile.delete();
+			xmlFile.createNewFile();
+			FileOutputStream fileOutputStream = new FileOutputStream(xmlFile);
+			fileOutputStream.write(response);
+			fileOutputStream.close();
+			JAXBContext context = JAXBContext.newInstance(BillStatusResponse.class);
+			Unmarshaller unmarshaller = context.createUnmarshaller();
+			BillStatusResponse responseXML = (BillStatusResponse) unmarshaller.unmarshal(xmlFile);
+
+			Blob rsp = new SerialBlob(response);
+			status.setResponseMsg(rsp);
+			status.setRspRRN(responseXML.getTxnInfo().getRrn());
+			status.setErrCode(responseXML.getResponse().getErrorMessages().getErrCode());
+			status.setErrDesc(responseXML.getResponse().getErrorMessages().getErrDesc());
+			status.setResponseCode(responseXML.getBillPayHeader().getRespCode());
+			status.setResponseDesc(responseXML.getBillPayHeader().getRespDesc());
+			status.setBbpsReferenceNo(responseXML.getResponse().getBbpsReferenceNo());
+			status.setRspFiller1(responseXML.getResponse().getFillers().getFiller().get(0) + "");
+			status.setRspFiller2(responseXML.getResponse().getFillers().getFiller().get(1) + "");
+			status.setRequestID(responseXML.getResponse().getRequestId());
+			status.setTimeStamp(responseXML.getResponse().getTimeStamp());
+			status.setTransactionID(responseXML.getResponse().getTransactionId());
+			session.beginTransaction();
+			session.saveOrUpdate(status);
+			session.getTransaction().commit();
+			// xmlFile.delete();
+		} catch (SQLException ex) {
+			session.getTransaction().rollback();
+			ex.printStackTrace();
+		} catch (JAXBException e) {
+			e.printStackTrace();
+		} catch (IOException exception) {
+			exception.printStackTrace();
+		}
+		return status;
+	}
+
+	/**
+	 * @param in
+	 * @return
+	 */
+	private static PaymentStatus savePaymentStatusReq(BBPSIN in) {
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		PaymentStatus status = new PaymentStatus();
+		try {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+			String date = dateFormat.format(new Date());
+			status.setCurrentDate(dateFormat.parse(date));
+			Blob iso = new SerialBlob(in.getReqByte());
+			status.setRequestMsg(iso);
+			status.setAgentID(in.getAgentID());
+			status.setBillerID(in.getBillerID());
+			status.setPosCode(in.getPosCode());
+			status.setPosEntryMode(in.getPosEntryMode());
+			status.setProcessingCode(in.getProcessingCode());
+			status.setRequestID(in.getReqID());
+			status.setRrn(in.getRrn());
+			status.setTransactionDateTime(in.getTxnDateTime());
+			status.setTerminalID(in.getTerminalID());
+			status.setBillReq(in.getReqByte());
+			session.beginTransaction();
+			session.saveOrUpdate(status);
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			log.error(e);
+			e.printStackTrace();
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
+		}
+		return status;
+	}
+
+}

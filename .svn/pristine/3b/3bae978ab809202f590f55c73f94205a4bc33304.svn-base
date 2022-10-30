@@ -1,0 +1,12 @@
+/**
+ * 
+ */
+package com.bomweb.service.model;
+
+/**
+ * @author SACHIN
+ *
+ */
+public class DualAuthOut {
+
+}

@@ -1,0 +1,726 @@
+/**
+ * 
+ */
+package com.bomweb.model;
+
+import java.sql.Blob;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+/**
+ * @author SACHIN
+ *
+ */
+@Entity
+@Table(name = "fetchbill_reqrsp")
+public class FetchBill {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "FETCHBILL_SEQ")
+	@SequenceGenerator(name = "FETCHBILL_SEQ", sequenceName = "FETCHBILL_SEQ", allocationSize = 0)
+	@Column(name = "LOG_ID")
+	private int id;
+	@Column(name = "TRN_DATE")
+	@Temporal(TemporalType.DATE)
+	private Date currentDate;
+	@Column(name = "REQDMP")
+	private Blob requestMsg;
+	@Column(name = "RSPDMP")
+	private Blob responseMsg;
+	@Column(name = "PROCESSINGCODE")
+	private String processingCode;
+	@Column(name = "TXNDATETIME")
+	private String transactionDateTime;
+	@Column(name = "POSENTRYMODE")
+	private String posEntryMode;
+	@Column(name = "POSCODE")
+	private String posCode;
+	@Column(name = "RRN")
+	private String rrn;
+	@Column(name = "TERMINALID")
+	private String terminalID;
+	@Column(name = "AGENTID")
+	private String agentID;
+	@Column(name = "BILLERID")
+	private String billerID;
+	@Column(name = "REQUESTID")
+	private String reqID;
+	@Column(name = "UID_VID")
+	private String uidorvid;
+	@Column(name = "FILLER1")
+	private String filler1;
+	@Column(name = "FILLER2")
+	private String filler2;
+	@Column(name = "FILLER3")
+	private String filler3;
+	@Column(name = "AUTH1")
+	private String auth1;
+	@Column(name = "AUTH2")
+	private String auth2;
+	@Column(name = "AUTH3")
+	private String auth3;
+
+	@Column(name = "RESPONSECODE")
+	private String responseCode;
+	@Column(name = "RESPONSEDESC")
+	private String responseDesc;
+	@Column(name = "ERRORCODE")
+	private String errorCode;
+	@Column(name = "ERRORDESC")
+	private String errorDesc;
+	@Column(name = "RSPRRN")
+	private String rspRRN;
+	@Column(name = "RSPBILLAMOUNT")
+	private String rspBillAmount;
+	@Column(name = "RSPBILLDATE")
+	private String rspBillDate;
+	@Column(name = "RSPBILLDUEDATE")
+	private String rspBillDueDate;
+	@Column(name = "RSPBILLERID")
+	private String rspBillerID;
+
+	@Column(name = "RSPPARTIALPAYMENT")
+	private String rspPartialPayment;
+	@Column(name = "RSPPAYWITHOUTBILL")
+	private String rspPayWithOutBill;
+	@Column(name = "RSPRequestID")
+	private String rspRequestID;
+	@Column(name = "RSPVALID")
+	private String rspValid;
+	@Column(name = "RSPFILLER1")
+	private String rspFiller1;
+	@Column(name = "RSPFILLER2")
+	private String rspFiller2;
+	@Column(name = "RSPFILLER3")
+	private String rspFiller3;
+	@Column(name = "RSPAUTH1")
+	private String rspAuth1;
+	@Column(name = "RSPAUTH2")
+	private String rspAuth2;
+	@Column(name = "RSPAUTH3")
+	private String rspAuth3;
+	@Column(name = "AADHAARNO")
+	private String aadhaarNo;
+
+	@Transient
+	private byte[] billReq;
+
+	/**
+	 * @return the id
+	 */
+	public int getId() {
+		return id;
+	}
+
+	/**
+	 * @param id
+	 *            the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	/**
+	 * @return the currentDate
+	 */
+	public Date getCurrentDate() {
+		return currentDate;
+	}
+
+	/**
+	 * @param currentDate
+	 *            the currentDate to set
+	 */
+	public void setCurrentDate(Date currentDate) {
+		this.currentDate = currentDate;
+	}
+
+	/**
+	 * @return the requestMsg
+	 */
+	public Blob getRequestMsg() {
+		return requestMsg;
+	}
+
+	/**
+	 * @param requestMsg
+	 *            the requestMsg to set
+	 */
+	public void setRequestMsg(Blob requestMsg) {
+		this.requestMsg = requestMsg;
+	}
+
+	/**
+	 * @return the responseMsg
+	 */
+	public Blob getResponseMsg() {
+		return responseMsg;
+	}
+
+	/**
+	 * @param responseMsg
+	 *            the responseMsg to set
+	 */
+	public void setResponseMsg(Blob responseMsg) {
+		this.responseMsg = responseMsg;
+	}
+
+	/**
+	 * @return the processingCode
+	 */
+	public String getProcessingCode() {
+		return processingCode;
+	}
+
+	/**
+	 * @param processingCode
+	 *            the processingCode to set
+	 */
+	public void setProcessingCode(String processingCode) {
+		this.processingCode = processingCode;
+	}
+
+	/**
+	 * @return the transactionDateTime
+	 */
+	public String getTransactionDateTime() {
+		return transactionDateTime;
+	}
+
+	/**
+	 * @param transactionDateTime
+	 *            the transactionDateTime to set
+	 */
+	public void setTransactionDateTime(String transactionDateTime) {
+		this.transactionDateTime = transactionDateTime;
+	}
+
+	/**
+	 * @return the posEntryMode
+	 */
+	public String getPosEntryMode() {
+		return posEntryMode;
+	}
+
+	/**
+	 * @param posEntryMode
+	 *            the posEntryMode to set
+	 */
+	public void setPosEntryMode(String posEntryMode) {
+		this.posEntryMode = posEntryMode;
+	}
+
+	/**
+	 * @return the posCode
+	 */
+	public String getPosCode() {
+		return posCode;
+	}
+
+	/**
+	 * @param posCode
+	 *            the posCode to set
+	 */
+	public void setPosCode(String posCode) {
+		this.posCode = posCode;
+	}
+
+	/**
+	 * @return the rrn
+	 */
+	public String getRrn() {
+		return rrn;
+	}
+
+	/**
+	 * @param rrn
+	 *            the rrn to set
+	 */
+	public void setRrn(String rrn) {
+		this.rrn = rrn;
+	}
+
+	/**
+	 * @return the terminalID
+	 */
+	public String getTerminalID() {
+		return terminalID;
+	}
+
+	/**
+	 * @param terminalID
+	 *            the terminalID to set
+	 */
+	public void setTerminalID(String terminalID) {
+		this.terminalID = terminalID;
+	}
+
+	/**
+	 * @return the agentID
+	 */
+	public String getAgentID() {
+		return agentID;
+	}
+
+	/**
+	 * @param agentID
+	 *            the agentID to set
+	 */
+	public void setAgentID(String agentID) {
+		this.agentID = agentID;
+	}
+
+	/**
+	 * @return the billerID
+	 */
+	public String getBillerID() {
+		return billerID;
+	}
+
+	/**
+	 * @param billerID
+	 *            the billerID to set
+	 */
+	public void setBillerID(String billerID) {
+		this.billerID = billerID;
+	}
+
+	/**
+	 * @return the reqID
+	 */
+	public String getReqID() {
+		return reqID;
+	}
+
+	/**
+	 * @param reqID
+	 *            the reqID to set
+	 */
+	public void setReqID(String reqID) {
+		this.reqID = reqID;
+	}
+
+	/**
+	 * @return the uidorvid
+	 */
+	public String getUidorvid() {
+		return uidorvid;
+	}
+
+	/**
+	 * @param uidorvid
+	 *            the uidorvid to set
+	 */
+	public void setUidorvid(String uidorvid) {
+		this.uidorvid = uidorvid;
+	}
+
+	/**
+	 * @return the filler1
+	 */
+	public String getFiller1() {
+		return filler1;
+	}
+
+	/**
+	 * @param filler1
+	 *            the filler1 to set
+	 */
+	public void setFiller1(String filler1) {
+		this.filler1 = filler1;
+	}
+
+	/**
+	 * @return the filler2
+	 */
+	public String getFiller2() {
+		return filler2;
+	}
+
+	/**
+	 * @param filler2
+	 *            the filler2 to set
+	 */
+	public void setFiller2(String filler2) {
+		this.filler2 = filler2;
+	}
+
+	/**
+	 * @return the filler3
+	 */
+	public String getFiller3() {
+		return filler3;
+	}
+
+	/**
+	 * @param filler3
+	 *            the filler3 to set
+	 */
+	public void setFiller3(String filler3) {
+		this.filler3 = filler3;
+	}
+
+	/**
+	 * @return the auth1
+	 */
+	public String getAuth1() {
+		return auth1;
+	}
+
+	/**
+	 * @param auth1
+	 *            the auth1 to set
+	 */
+	public void setAuth1(String auth1) {
+		this.auth1 = auth1;
+	}
+
+	/**
+	 * @return the auth2
+	 */
+	public String getAuth2() {
+		return auth2;
+	}
+
+	/**
+	 * @param auth2
+	 *            the auth2 to set
+	 */
+	public void setAuth2(String auth2) {
+		this.auth2 = auth2;
+	}
+
+	/**
+	 * @return the auth3
+	 */
+	public String getAuth3() {
+		return auth3;
+	}
+
+	/**
+	 * @param auth3
+	 *            the auth3 to set
+	 */
+	public void setAuth3(String auth3) {
+		this.auth3 = auth3;
+	}
+
+	/**
+	 * @return the responseCode
+	 */
+	public String getResponseCode() {
+		return responseCode;
+	}
+
+	/**
+	 * @param responseCode
+	 *            the responseCode to set
+	 */
+	public void setResponseCode(String responseCode) {
+		this.responseCode = responseCode;
+	}
+
+	/**
+	 * @return the responseDesc
+	 */
+	public String getResponseDesc() {
+		return responseDesc;
+	}
+
+	/**
+	 * @param responseDesc
+	 *            the responseDesc to set
+	 */
+	public void setResponseDesc(String responseDesc) {
+		this.responseDesc = responseDesc;
+	}
+
+	/**
+	 * @return the errorCode
+	 */
+	public String getErrorCode() {
+		return errorCode;
+	}
+
+	/**
+	 * @param errorCode
+	 *            the errorCode to set
+	 */
+	public void setErrorCode(String errorCode) {
+		this.errorCode = errorCode;
+	}
+
+	/**
+	 * @return the errorDesc
+	 */
+	public String getErrorDesc() {
+		return errorDesc;
+	}
+
+	/**
+	 * @param errorDesc
+	 *            the errorDesc to set
+	 */
+	public void setErrorDesc(String errorDesc) {
+		this.errorDesc = errorDesc;
+	}
+
+	/**
+	 * @return the rspRRN
+	 */
+	public String getRspRRN() {
+		return rspRRN;
+	}
+
+	/**
+	 * @param rspRRN
+	 *            the rspRRN to set
+	 */
+	public void setRspRRN(String rspRRN) {
+		this.rspRRN = rspRRN;
+	}
+
+	/**
+	 * @return the rspBillAmount
+	 */
+	public String getRspBillAmount() {
+		return rspBillAmount;
+	}
+
+	/**
+	 * @param rspBillAmount
+	 *            the rspBillAmount to set
+	 */
+	public void setRspBillAmount(String rspBillAmount) {
+		this.rspBillAmount = rspBillAmount;
+	}
+
+	/**
+	 * @return the rspBillDate
+	 */
+	public String getRspBillDate() {
+		return rspBillDate;
+	}
+
+	/**
+	 * @param rspBillDate
+	 *            the rspBillDate to set
+	 */
+	public void setRspBillDate(String rspBillDate) {
+		this.rspBillDate = rspBillDate;
+	}
+
+	/**
+	 * @return the rspBillDueDate
+	 */
+	public String getRspBillDueDate() {
+		return rspBillDueDate;
+	}
+
+	/**
+	 * @param rspBillDueDate
+	 *            the rspBillDueDate to set
+	 */
+	public void setRspBillDueDate(String rspBillDueDate) {
+		this.rspBillDueDate = rspBillDueDate;
+	}
+
+	/**
+	 * @return the rspBillerID
+	 */
+	public String getRspBillerID() {
+		return rspBillerID;
+	}
+
+	/**
+	 * @param rspBillerID
+	 *            the rspBillerID to set
+	 */
+	public void setRspBillerID(String rspBillerID) {
+		this.rspBillerID = rspBillerID;
+	}
+
+	/**
+	 * @return the rspPartialPayment
+	 */
+	public String getRspPartialPayment() {
+		return rspPartialPayment;
+	}
+
+	/**
+	 * @param rspPartialPayment
+	 *            the rspPartialPayment to set
+	 */
+	public void setRspPartialPayment(String rspPartialPayment) {
+		this.rspPartialPayment = rspPartialPayment;
+	}
+
+	/**
+	 * @return the rspPayWithOutBill
+	 */
+	public String getRspPayWithOutBill() {
+		return rspPayWithOutBill;
+	}
+
+	/**
+	 * @param rspPayWithOutBill
+	 *            the rspPayWithOutBill to set
+	 */
+	public void setRspPayWithOutBill(String rspPayWithOutBill) {
+		this.rspPayWithOutBill = rspPayWithOutBill;
+	}
+
+	/**
+	 * @return the rspRequestID
+	 */
+	public String getRspRequestID() {
+		return rspRequestID;
+	}
+
+	/**
+	 * @param rspRequestID
+	 *            the rspRequestID to set
+	 */
+	public void setRspRequestID(String rspRequestID) {
+		this.rspRequestID = rspRequestID;
+	}
+
+	/**
+	 * @return the rspValid
+	 */
+	public String getRspValid() {
+		return rspValid;
+	}
+
+	/**
+	 * @param rspValid
+	 *            the rspValid to set
+	 */
+	public void setRspValid(String rspValid) {
+		this.rspValid = rspValid;
+	}
+
+	/**
+	 * @return the rspFiller1
+	 */
+	public String getRspFiller1() {
+		return rspFiller1;
+	}
+
+	/**
+	 * @param rspFiller1
+	 *            the rspFiller1 to set
+	 */
+	public void setRspFiller1(String rspFiller1) {
+		this.rspFiller1 = rspFiller1;
+	}
+
+	/**
+	 * @return the rspFiller2
+	 */
+	public String getRspFiller2() {
+		return rspFiller2;
+	}
+
+	/**
+	 * @param rspFiller2
+	 *            the rspFiller2 to set
+	 */
+	public void setRspFiller2(String rspFiller2) {
+		this.rspFiller2 = rspFiller2;
+	}
+
+	/**
+	 * @return the rspFiller3
+	 */
+	public String getRspFiller3() {
+		return rspFiller3;
+	}
+
+	/**
+	 * @param rspFiller3
+	 *            the rspFiller3 to set
+	 */
+	public void setRspFiller3(String rspFiller3) {
+		this.rspFiller3 = rspFiller3;
+	}
+
+	/**
+	 * @return the rspAuth1
+	 */
+	public String getRspAuth1() {
+		return rspAuth1;
+	}
+
+	/**
+	 * @param rspAuth1
+	 *            the rspAuth1 to set
+	 */
+	public void setRspAuth1(String rspAuth1) {
+		this.rspAuth1 = rspAuth1;
+	}
+
+	/**
+	 * @return the rspAuth2
+	 */
+	public String getRspAuth2() {
+		return rspAuth2;
+	}
+
+	/**
+	 * @param rspAuth2
+	 *            the rspAuth2 to set
+	 */
+	public void setRspAuth2(String rspAuth2) {
+		this.rspAuth2 = rspAuth2;
+	}
+
+	/**
+	 * @return the rspAuth3
+	 */
+	public String getRspAuth3() {
+		return rspAuth3;
+	}
+
+	/**
+	 * @param rspAuth3
+	 *            the rspAuth3 to set
+	 */
+	public void setRspAuth3(String rspAuth3) {
+		this.rspAuth3 = rspAuth3;
+	}
+
+	/**
+	 * @return the billReq
+	 */
+	public byte[] getBillReq() {
+		return billReq;
+	}
+
+	/**
+	 * @param billReq
+	 *            the billReq to set
+	 */
+	public void setBillReq(byte[] billReq) {
+		this.billReq = billReq;
+	}
+
+	public String getAadhaarNo() {
+		return aadhaarNo;
+	}
+
+	public void setAadhaarNo(String aadhaarNo) {
+		this.aadhaarNo = aadhaarNo;
+	}
+
+}

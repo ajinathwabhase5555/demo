@@ -1,0 +1,341 @@
+/**
+ * 
+ */
+package com.bomweb.rupay;
+
+import java.io.DataInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.sql.Blob;
+import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+import javax.sql.rowset.serial.SerialBlob;
+import javax.sql.rowset.serial.SerialException;
+
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.hibernate.Query;
+import org.hibernate.Session;
+
+import com.bomweb.model.RupayModel;
+import com.bomweb.model.RupayTransaction;
+import com.bomweb.service.model.RupayIn;
+import com.bomweb.service.model.RupayOut;
+import com.bomweb.util.HibernateUtil;
+
+/**
+ * @author SACHIN
+ *
+ */
+public class RupayCard {
+	static Log log = LogFactory.getLog(RupayCard.class);
+
+	/**
+	 * @param in
+	 * @param out
+	 * @return
+	 */
+	public static RupayOut rupayTransactionRequest(RupayIn in, RupayOut out) {
+
+		Socket socket = null;
+		try {
+			byte[] request = ISO8583_Rupay.createISO(in);
+			System.out.println("***********Request : *****************" + Hex.encodeHexString(request));
+
+			RupayTransaction transaction = saveRequest(request, in);
+			socket = new Socket("125.16.108.16", 5613); // old IP PORT "125.17.112.254", 7089
+			socket.setSoTimeout(60000);
+			OutputStream os = socket.getOutputStream();
+			os.write(request);
+			os.flush();
+			DataInputStream response = new DataInputStream(socket.getInputStream());
+			Thread.sleep(10000);
+			int len = response.available();
+			byte[] rspByte = new byte[len];
+			System.out.println(" Len :" + len);
+			response.read(rspByte);
+			// socket.close();
+			OutputStream ops = new FileOutputStream("E://rupayResponse.txt");
+			ops.write(rspByte);
+			ops.close();
+
+			if (len > 0) {
+				byte[] totalmsg = null;
+				if (len < 81)
+					totalmsg = Arrays.copyOfRange(rspByte, 0, 34);
+				else
+					totalmsg = Arrays.copyOfRange(rspByte, 0, 43);
+				String leg = Hex.encodeHexString(totalmsg);
+				String str = leg.substring(0, 4);
+				str = str + (leg.substring(14));
+
+				byte[] rrnbyte = Arrays.copyOfRange(rspByte, totalmsg.length, rspByte.length);
+				String rrn = new String(rrnbyte);
+
+				String rspmsg = str + rrn;
+				System.out.println(rspmsg);
+
+				String[] rsp = RupayParser.parseMsg(rspmsg.getBytes());
+				saveResponse(rspByte, rsp, transaction.getId());
+
+				if (rsp[3].equals("920000")) {
+					out.setResponseCode(rsp[39]);
+					out.setStan(rsp[11]);
+					out.setTime(rsp[12]);
+					out.setDate(rsp[13]);
+					out.setTerminalID(rsp[41]);
+					if (rsp[39].equals("00")) {
+						byte[] key = Arrays.copyOfRange(rspByte, 57, 73);
+						String tpk = Hex.encodeHexString(key);
+						System.out.println("TPK :" + tpk.toUpperCase());
+						out.setTpk(tpk.toUpperCase());
+					}
+				} else {
+					out.setResponseCode(rsp[39]);
+					if (rsp[39].equals("00")) {
+						out.setTxnAmount(rsp[4]);
+						out.setTime(rsp[12]);
+						out.setDate(rsp[13]);
+						out.setRrn(rsp[37]);
+						out.setAuthNo(rsp[38]);
+						out.setTerminalID(rsp[41]);
+						String bal = removeLeadingZeroes(rsp[54].substring(9));
+						if (bal.equals("0")) {
+							bal = bal + ".00";
+						} else if (bal.length() == 1 || bal.length() == 2) {
+							bal = "0." + bal;
+						} else {
+							String cb = bal.substring(0, bal.length() - 2);
+							String paise = bal.substring(bal.length() - 2);
+							bal = cb.concat("." + paise);
+						}
+						out.setBalance(bal);
+					}
+				}
+			} else
+				out.setResponseCode("91");
+
+		} catch (Exception e) {
+			try {
+				// socket.close();
+				out.setResponseCode("91");
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+		return out;
+	}
+
+	/**
+	 * @param rsponseByte
+	 * @param response
+	 * @param id
+	 */
+	private static void saveResponse(byte[] rsponseByte, String[] response, int id) {
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		RupayTransaction transaction = (RupayTransaction) session.load(RupayTransaction.class, id);
+		try {
+			Blob rsp = new SerialBlob(rsponseByte);
+			transaction.setResponseMsg(rsp);
+			transaction.setResprocessingCode(response[3]);
+			transaction.setResstan(response[11]);
+			transaction.setRestransactionTime(response[12]);
+			transaction.setRestransactionDate(response[13]);
+			if (response[3].equals("920000")) {
+				transaction.setResresponseCode(response[39]);
+				if (response[39].equals("00")) {
+					byte[] key = Arrays.copyOfRange(rsponseByte, 57, 73);
+					String tpk = Hex.encodeHexString(key);
+					transaction.setTpk(tpk);
+				}
+			} else {
+				transaction.setResrrnNo(response[37]);
+				transaction.setAuthNo(response[38]);
+				transaction.setResresponseCode(response[39]);
+				if (response[39].equals("00")) {
+					transaction.setBalance(response[54]);
+				}
+			}
+			session.beginTransaction();
+			session.saveOrUpdate(transaction);
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			e.printStackTrace();
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
+		}
+	}
+
+	/**
+	 * @param request
+	 * @param in
+	 */
+	private static RupayTransaction saveRequest(byte[] request, RupayIn in) {
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		RupayTransaction transaction = new RupayTransaction();
+		try {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+			String date = dateFormat.format(new Date());
+			transaction.setCurrentDate(dateFormat.parse(date));
+			Blob iso = new SerialBlob(request);
+			transaction.setRequestMsg(iso);
+			if (in.getProcessingCode().equals("920000")) {
+				transaction.setProcessingCode(in.getProcessingCode());
+				transaction.setStan(in.getRrn().substring(in.getRrn().length() - 6));
+				transaction.setNetworkID("0000");
+				transaction.setTerminalID(in.getTerminalID());
+				transaction.setCardAcceptorID("000000000000888");
+			} else {
+				transaction.setPan("XXXXXXXXXX" + in.getPan().substring(in.getPan().length() - 6));
+				transaction.setProcessingCode(in.getProcessingCode());
+				transaction.setTransactionAmount(in.getAmount());
+				transaction.setStan(in.getRrn().substring(in.getRrn().length() - 6));
+				transaction.setPosEntryMode("0021");
+				transaction.setNetworkID("0200");
+				transaction.setPosCode("00");
+				transaction.setTerminalID(in.getTerminalID());
+				transaction.setCardAcceptorID("000000000000888");
+				transaction.setCurrencyCode("0356");
+				transaction.setTrackData(in.getTrackData());
+				if (in.getBeneficiaryAccNo() != null)
+					transaction.setAccountNo(in.getBeneficiaryAccNo());
+			}
+			session.beginTransaction();
+			session.saveOrUpdate(transaction);
+			session.getTransaction().commit();
+		} catch (SerialException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			session.getTransaction().rollback();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		} finally {
+			session.close();
+		}
+		return transaction;
+	}
+
+	public static String removeLeadingZeroes(String value) {
+		while (value.length() > 1 && value.indexOf("0") == 0)
+			value = value.substring(1);
+		return value;
+	}
+
+	/**
+	 * @param in
+	 * @param out
+	 * @return
+	 */
+	public static RupayOut rupayReversalRequest(RupayIn in, RupayOut out) {
+
+		Socket socket = null;
+		try {
+			RupayModel revReq = reversal(in);
+			byte[] request = RupayReversal.createISO(revReq);
+			System.out.println("***********Request : *****************" + Hex.encodeHexString(request));
+
+			RupayTransaction transaction = saveRequest(request, in);
+			socket = new Socket("125.17.112.254", 7089);
+			socket.setSoTimeout(60000);
+			OutputStream os = socket.getOutputStream();
+			os.write(request);
+			os.flush();
+			DataInputStream response = new DataInputStream(socket.getInputStream());
+			Thread.sleep(10000);
+			int len = response.available();
+			byte[] rspByte = new byte[len];
+			System.out.println(" Len :" + len);
+			response.read(rspByte);
+			socket.close();
+			OutputStream ops = new FileOutputStream("E://RupayRevReq.txt");
+			ops.write(rspByte);
+			ops.close();
+
+			if (len > 0) {
+				byte[] totalmsg = Arrays.copyOfRange(rspByte, 0, 34);
+				String leg = Hex.encodeHexString(totalmsg);
+				String str = leg.substring(0, 4);
+				str = str + (leg.substring(14));
+
+				byte[] rrnbyte = Arrays.copyOfRange(rspByte, totalmsg.length, rspByte.length);
+				String rrn = new String(rrnbyte);
+
+				String rspmsg = str + rrn;
+				System.out.println(rspmsg);
+
+				String[] rsp = RupayParser.parseMsg(rspmsg.getBytes());
+				saveResponse(rspByte, rsp, transaction.getId());
+
+				out.setResponseCode(rsp[39]);
+				if (rsp[39].equals("00")) {
+					out.setTxnAmount(rsp[4]);
+					out.setTime(rsp[12]);
+					out.setDate(rsp[13]);
+					out.setRrn(rsp[37]);
+					out.setAuthNo(rsp[38]);
+					out.setTerminalID(rsp[41]);
+					String bal = removeLeadingZeroes(rsp[54].substring(9));
+					String cb = bal.substring(0, bal.length() - 2);
+					String paise = bal.substring(bal.length() - 2);
+					bal = cb.concat("." + paise);
+					out.setBalance(bal);
+				}
+			}
+			out.setResponseCode("91");
+
+		} catch (Exception e) {
+			try {
+				socket.close();
+				out.setResponseCode("91");
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+		return out;
+	}
+
+	/**
+	 * @param in
+	 * @param out
+	 * @return
+	 */
+	private static RupayModel reversal(RupayIn in) {
+
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		String hql = "FROM RupayTransaction O WHERE O.rrnNo =" + in.getRrn().substring(in.getRrn().length() - 6);
+		Query query = session.createQuery(hql);
+		List<RupayTransaction> list = query.list();
+		for (RupayTransaction rupayTransaction : list) {
+			System.out.println("Response Code : " + rupayTransaction.getResresponseCode());
+			log.info("*******ONUS Start Reversal**********");
+			RupayModel model = new RupayModel();
+			model.setPan(in.getPan());
+			model.setProcessingCode(rupayTransaction.getProcessingCode());
+			model.setTransactionAmount(rupayTransaction.getTransactionAmount());
+			model.setStan(rupayTransaction.getStan());
+			model.setPoshEntryMode(rupayTransaction.getPosEntryMode());
+			model.setNetworkID(rupayTransaction.getNetworkID());
+			model.setPoshConditionCode(rupayTransaction.getPosCode());
+			model.setRrn(in.getRrn());
+			model.setResponseCode(rupayTransaction.getResresponseCode());
+			model.setTerminalId(rupayTransaction.getTerminalID());
+			model.setCardAccptorID(rupayTransaction.getCardAcceptorID());
+			model.setCurrencyCode(rupayTransaction.getCurrencyCode());
+
+		}
+		return null;
+	}
+}

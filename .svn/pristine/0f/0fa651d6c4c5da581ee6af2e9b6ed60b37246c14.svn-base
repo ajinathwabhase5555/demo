@@ -1,0 +1,15 @@
+package com.bomweb.service.model;
+
+public class EKycRequest {
+
+	private byte[] ekycRequest;
+
+	public byte[] getEkycRequest() {
+		return ekycRequest;
+	}
+
+	public void setEkycRequest(byte[] ekycRequest) {
+		this.ekycRequest = ekycRequest;
+	}
+
+}

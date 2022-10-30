@@ -1,0 +1,117 @@
+package com.bomweb.service;
+
+import javax.jws.WebMethod;
+import javax.jws.WebService;
+
+import com.bomweb.service.model.AADHAARSTATUSIN;
+import com.bomweb.service.model.AADHAARSTATUSOUT;
+import com.bomweb.service.model.BBPSIN;
+import com.bomweb.service.model.BBPSOUT;
+import com.bomweb.service.model.DualAuthIn;
+import com.bomweb.service.model.DualAuthOut;
+import com.bomweb.service.model.EKYCOTPIn;
+import com.bomweb.service.model.EKYCOTPOut;
+import com.bomweb.service.model.EKycRequest;
+import com.bomweb.service.model.EKycResponse;
+import com.bomweb.service.model.InsuranceIn;
+import com.bomweb.service.model.PushEnrollment_IN;
+import com.bomweb.service.model.PushEnrollment_OUT;
+import com.bomweb.service.model.RupayIn;
+import com.bomweb.service.model.RupayOut;
+import com.bomweb.service.model.InsuranceOut;
+import com.bomweb.service.model.TransactionModel_IN;
+import com.bomweb.service.model.TransactionModel_OUT;
+
+@WebService
+public class TransactionService {
+
+	@WebMethod
+	public TransactionModel_OUT transactions(TransactionModel_IN transactionModel) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.transactions(transactionModel);
+	}
+
+	@WebMethod
+	public EKycResponse sendEkycRequest(EKycRequest eKycRequest) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.sendEkycRequest(eKycRequest);
+	}
+
+	@WebMethod
+	public PushEnrollment_OUT pushEnrollmentFile(PushEnrollment_IN enrollment_IN) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.pushEnrollment(enrollment_IN);
+	}
+	
+	@WebMethod
+	public TransactionModel_OUT initiateReversal(TransactionModel_IN in) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.initiateReversal(in);
+	}
+	
+	@WebMethod
+	public InsuranceOut cifEnquiry(InsuranceIn in) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.cifEnquiry(in);
+	}
+	
+	@WebMethod
+	public InsuranceOut insuranceEnquiry(InsuranceIn in) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.insuranceEnquiry(in);
+	}
+	
+	@WebMethod
+	public InsuranceOut insuranceRequest(InsuranceIn in) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.insuranceRequest(in);
+	}
+	
+	@WebMethod
+	public EKYCOTPOut eKYCOTPRequest(EKYCOTPIn in) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.ekycOTPRequest(in);
+	}
+	
+	@WebMethod
+	public DualAuthOut dualAuthRequest(DualAuthIn in) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.dualAuthRequest(in);
+	}
+	
+	@WebMethod
+	public RupayOut rupayRequest(RupayIn in) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.rupayRequest(in);
+	}
+	
+	@WebMethod
+	public RupayOut rupayReversal(RupayIn in) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.rupayReversal(in);
+	}
+	
+	@WebMethod
+	public BBPSOUT fetchBill(BBPSIN in) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.fetchBill(in);
+	}
+	
+	@WebMethod
+	public BBPSOUT payBill(BBPSIN in) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.payBill(in);
+	}
+	
+	@WebMethod
+	public BBPSOUT checkPaymentStatus(BBPSIN in) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.checkPaymentStatus(in);
+	}
+	
+	@WebMethod
+	public AADHAARSTATUSOUT checkAadhaarStatus(AADHAARSTATUSIN in) {
+		TransactionServiceImpl bomservice = new TransactionServiceImpl();
+		return bomservice.checkAadhaarStatus(in);
+	}
+}

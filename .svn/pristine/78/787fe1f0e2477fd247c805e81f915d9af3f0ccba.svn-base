@@ -1,0 +1,39 @@
+/**
+ * 
+ */
+package com.bomweb.service.model;
+
+/**
+ * @author SACHIN
+ *
+ */
+public class EKYCOTPOut {
+
+	private String rrn;
+	private String responseCode;
+	private String responseMsg;
+
+	public String getRrn() {
+		return rrn;
+	}
+
+	public void setRrn(String rrn) {
+		this.rrn = rrn;
+	}
+
+	public String getResponseCode() {
+		return responseCode;
+	}
+
+	public void setResponseCode(String responseCode) {
+		this.responseCode = responseCode;
+	}
+
+	public String getResponseMsg() {
+		return responseMsg;
+	}
+
+	public void setResponseMsg(String responseMsg) {
+		this.responseMsg = responseMsg;
+	}
+}

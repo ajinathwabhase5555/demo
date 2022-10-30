@@ -1,0 +1,139 @@
+package com.bomweb.service.model;
+
+import java.util.List;
+
+import com.bomweb.model.MiniStatementData;
+
+/**
+ * @author SACHIN
+ *
+ */
+public class TransactionModel_OUT {
+
+	private String responseCode;
+	private String responseMsg;
+	private String customerAvailableBalance;
+	private String authCode;
+	private String rrnNo;
+	private String agentID;
+	private String terminalID;
+	private String uidNo;
+	private String stan;
+	private String transactionAmount;
+	private String timestamp;
+	private String beneficiaryAccNo;
+	private String reversalFlag;
+	private List<MiniStatementData> miniStatement;
+
+	public String getResponseCode() {
+		return responseCode;
+	}
+
+	public void setResponseCode(String responseCode) {
+		this.responseCode = responseCode;
+	}
+
+	public String getResponseMsg() {
+		return responseMsg;
+	}
+
+	public void setResponseMsg(String responseMsg) {
+		this.responseMsg = responseMsg;
+	}
+
+	public String getCustomerAvailableBalance() {
+		return customerAvailableBalance;
+	}
+
+	public void setCustomerAvailableBalance(String customerAvailableBalance) {
+		this.customerAvailableBalance = customerAvailableBalance;
+	}
+
+	public String getAuthCode() {
+		return authCode;
+	}
+
+	public void setAuthCode(String authCode) {
+		this.authCode = authCode;
+	}
+
+	public String getRrnNo() {
+		return rrnNo;
+	}
+
+	public void setRrnNo(String rrnNo) {
+		this.rrnNo = rrnNo;
+	}
+
+	public String getAgentID() {
+		return agentID;
+	}
+
+	public void setAgentID(String agentID) {
+		this.agentID = agentID;
+	}
+
+	public String getTerminalID() {
+		return terminalID;
+	}
+
+	public void setTerminalID(String terminalID) {
+		this.terminalID = terminalID;
+	}
+
+	public String getUidNo() {
+		return uidNo;
+	}
+
+	public void setUidNo(String uidNo) {
+		this.uidNo = uidNo;
+	}
+
+	public String getStan() {
+		return stan;
+	}
+
+	public void setStan(String stan) {
+		this.stan = stan;
+	}
+
+	public String getTransactionAmount() {
+		return transactionAmount;
+	}
+
+	public void setTransactionAmount(String transactionAmount) {
+		this.transactionAmount = transactionAmount;
+	}
+
+	public String getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	public String getBeneficiaryAccNo() {
+		return beneficiaryAccNo;
+	}
+
+	public void setBeneficiaryAccNo(String beneficiaryAccNo) {
+		this.beneficiaryAccNo = beneficiaryAccNo;
+	}
+
+	public String getReversalFlag() {
+		return reversalFlag;
+	}
+
+	public void setReversalFlag(String reversalFlag) {
+		this.reversalFlag = reversalFlag;
+	}
+
+	public List<MiniStatementData> getMiniStatement() {
+		return miniStatement;
+	}
+
+	public void setMiniStatement(List<MiniStatementData> miniStatement) {
+		this.miniStatement = miniStatement;
+	}
+}

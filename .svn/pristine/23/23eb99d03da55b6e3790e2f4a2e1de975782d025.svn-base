@@ -1,0 +1,299 @@
+package com.bomweb.transaction.xml;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.sql.Blob;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.sql.rowset.serial.SerialBlob;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
+import org.hibernate.Session;
+
+import com.bomweb.model.ONUSTransactionXML;
+import com.bomweb.service.model.Transaction_IN;
+import com.bomweb.util.HibernateUtil;
+
+public class ISO8583XML {
+
+	static Log log = LogFactory.getLog(ISO8583XML.class);
+
+	/**
+	 * @param in
+	 * @return
+	 */
+	public static byte[] createXML(Transaction_IN in) {
+		try {
+
+			FIGWebReqSvc reqSvc = new FIGWebReqSvc();
+			SvcHeader svcHeader = new SvcHeader();
+			svcHeader.setTxnId(in.getRrn());
+			svcHeader.setTspVdrId("100");
+			svcHeader.setTxnOrigin("TAB");
+			svcHeader.setMsgFmtVer("1.0");
+			svcHeader.setAppVersion("1103");
+
+			TxnInfo info = new TxnInfo();
+			info.setFuncCode("1200");
+			info.setPan(in.getPan());
+			info.setProcCode(in.getProcessingCode());
+			info.setTxnDateTime(in.getTxnDateTime());
+			info.setMcc("6012");
+			info.setPosEntryMode("019");
+			info.setPosCode("05");
+			info.setAcqId("200015");
+			info.setTrack2Data("");
+			info.setRrn(in.getRrn());
+			info.setTerminalId(in.getTerminalId());
+			info.setCaId(in.getCaId());
+			info.setCaLocn("VISIONINDIA            PUNE         MHIN");
+			info.setTerminalData("");
+			info.setAgentId(in.getAgentId());
+			info.setServiceChrg("");
+			info.setTxnMode("UID");
+			info.setOrgTxnRefId("");
+			info.setNarration(in.getNarration());
+			info.setTxnHmac(in.getTxnHmac());
+			info.setUniqueNo(in.getRrn().substring(in.getRrn().length() - 6));
+			info.setExpDate("");
+			info.setSetlDate("");
+			info.setPosCaptCode("00");
+			info.setRefSeq("");
+
+			AuthInfo authInfo = new AuthInfo();
+			authInfo.setProv("");
+			authInfo.setEnc("00");
+			authInfo.setRc("Y");
+
+			Data data = new Data();
+			data.setType("01");
+			data.setValue(in.getBiometricData());
+
+			Fmt fmt = new Fmt();
+			fmt.setType("P");
+
+			Meta meta = new Meta();
+			meta.setUdc(in.getUdc());
+			meta.setRdsId(in.getRdsId());
+			meta.setRdsVer(in.getRdsVer());
+			meta.setDpId(in.getDpId());
+			meta.setDc(in.getDc());
+			meta.setMi(in.getMi());
+			meta.setMc(in.getMc());
+			meta.setBav("FPD");
+
+			Uses uses = new Uses();
+			uses.setPi("n");
+			uses.setPa("n");
+			uses.setPfa("n");
+			uses.setBio("y");
+			uses.setBt("FMR");
+			uses.setPin("n");
+			uses.setOtp("n");
+
+			EncInfo encInfo = new EncInfo();
+			encInfo.setAlg("");
+			encInfo.setHmac(in.getHmac());
+
+			SecKey key = new SecKey();
+			key.setCi(in.getCi());
+			key.setKi("");
+			key.setValue(in.getSkey());
+			encInfo.setSecKey(key);
+
+			authInfo.setData(data);
+			authInfo.setFmt(fmt);
+			authInfo.setMeta(meta);
+			authInfo.setUses(uses);
+			authInfo.setEncInfo(encInfo);
+
+			ServiceInfo serviceInfo = new ServiceInfo();
+			TxnReqInfo reqInfo = new TxnReqInfo();
+			if (!in.getProcessingCode().equals("PC0025") || !in.getProcessingCode().equals("PC0103"))
+				reqInfo.setAmount(in.getAmount());
+			reqInfo.setCurrCode("INR");
+			PartyList list = new PartyList();
+			PartyInfo partyInfo = new PartyInfo();
+			partyInfo.setType("PERSON");
+			partyInfo.setCateg("CUSTOMER");
+			partyInfo.setPartyOrg(in.getPan().substring(0, 6));
+			partyInfo.setPartyIdType("UID");
+			partyInfo.setPartyIdValue(in.getPan().substring(in.getPan().length() - 12));
+			list.setPartyInfo(partyInfo);
+			reqInfo.setPartyList(list);
+			serviceInfo.setTxnResInfo(reqInfo);
+
+			reqSvc.setAuthInfo(authInfo);
+			reqSvc.setServiceInfo(serviceInfo);
+			reqSvc.setSvcHeader(svcHeader);
+			reqSvc.setTxnInfo(info);
+
+			JAXBContext jaxbContext = JAXBContext.newInstance(FIGWebReqSvc.class);
+			Marshaller marshaller = jaxbContext.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			File file = new File("E://BOM/Enrollment/txn" + in.getRrn() + ".xml");
+			if (file.exists())
+				file.delete();
+			file.createNewFile();
+			marshaller.marshal(reqSvc, file);
+			byte[] trnReq = Files.readAllBytes(file.toPath());
+			if (trnReq.length != 0) {
+				ONUSTransactionXML tranReq = saveOnusRequest(trnReq, in);
+				System.out
+						.println("*************Transaction XML REQ **************" + new String(tranReq.getTranReq()));
+				byte[] response = postTransaction(tranReq.getTranReq());
+			}
+			return trnReq;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private static ONUSTransactionXML saveOnusRequest(byte[] trnReq, Transaction_IN in) {
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		ONUSTransactionXML transactionXML = new ONUSTransactionXML();
+		try {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+			String date = dateFormat.format(new Date());
+			transactionXML.setCurrentDate(dateFormat.parse(date));
+			Blob iso = new SerialBlob(trnReq);
+			transactionXML.setRequestMsg(iso);
+			transactionXML.setTranReq(trnReq);
+			transactionXML.setREQ_txnId(in.getRrn());
+			transactionXML.setREQ_tspVdrId("100");
+			transactionXML.setREQ_txnOrigin("TAB");
+			transactionXML.setREQ_msgFmtVer("1.0");
+			transactionXML.setREQ_appVersion("1103");
+			transactionXML.setREQ_funcCode("1200");
+			transactionXML.setREQ_pan(in.getPan());
+			transactionXML.setREQ_procCode(in.getProcessingCode());
+			transactionXML.setREQ_txnDateTime(in.getTxnDateTime());
+			transactionXML.setREQ_mcc("");
+			transactionXML.setREQ_posEntryMode("");
+			transactionXML.setREQ_posCode("");
+			transactionXML.setREQ_acqId("200015");
+			transactionXML.setREQ_track2Data("");
+			transactionXML.setREQ_rrn(in.getRrn());
+			transactionXML.setREQ_terminalId(in.getTerminalId());
+			transactionXML.setREQ_caId(in.getCaId());
+			transactionXML.setREQ_caLocn("VISIONINDIA            PUNE         MHIN");
+			transactionXML.setREQ_terminalData("");
+			transactionXML.setREQ_agentId(in.getAgentId());
+			transactionXML.setREQ_serviceChrg("");
+			transactionXML.setREQ_txnMode("UID");
+			transactionXML.setREQ_orgTxnRefId("");
+			transactionXML.setREQ_narration(in.getNarration());
+			transactionXML.setREQ_txnHmac(in.getTxnHmac());
+			transactionXML.setREQ_uniqueNo(in.getRrn().substring(in.getRrn().length() - 6));
+			transactionXML.setREQ_expDate("");
+			transactionXML.setREQ_setlDate("");
+			transactionXML.setREQ_posCaptCode("00");
+			transactionXML.setREQ_refSeq("");
+			transactionXML.setREQ_currCode("INR");
+			transactionXML.setREQ_partyOrg(in.getPan().substring(0, 6));
+			transactionXML.setREQ_partyIdType("UID");
+			transactionXML.setREQ_partyIdValue(in.getPan().substring(in.getPan().length() - 12));
+			if (!in.getProcessingCode().equals("PC0025") || !in.getProcessingCode().equals("PC0103"))
+				transactionXML.setREQ_amount(in.getAmount());
+			session.beginTransaction();
+			session.saveOrUpdate(transactionXML);
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			log.error(e);
+			e.printStackTrace();
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
+		}
+		return transactionXML;
+	}
+
+	public static byte[] postTransaction(byte[] dataSrc) throws Exception {
+		byte[] isoresponse = null;
+		try {
+			SSLContextBuilder builder = new SSLContextBuilder();
+			builder.loadTrustMaterial(null, new TrustStrategy() {
+				@Override
+				public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+					return true;
+				}
+			});
+
+			SSLConnectionSocketFactory sslSF = new SSLConnectionSocketFactory(builder.build(),
+					SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
+			HttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslSF).build();
+
+			HttpEntity entity = MultipartEntityBuilder.create()
+					.addBinaryBody("req.txt", dataSrc, ContentType.MULTIPART_FORM_DATA, "req.txt").build();
+			HttpPost httpPost = new HttpPost("http://125.18.108.188:7003/Servlet/TSPGenericServiceProcessorXML");
+			httpPost.setEntity(entity);
+			HttpResponse httpResponse = httpClient.execute(httpPost);
+
+			final RequestConfig params = RequestConfig.custom().setConnectTimeout(91000).setSocketTimeout(91000)
+					.build();
+			httpPost.setConfig(params);
+			HttpEntity responseEntity = httpResponse.getEntity();
+			int statusCode = httpResponse.getStatusLine().getStatusCode();
+			System.out.println("Status Code : " + statusCode);
+			if (statusCode == HttpStatus.SC_OK) {
+				String response = EntityUtils.toString(responseEntity, "UTF-8");
+				System.out.println("Response from Bank : " + response);
+
+				String data = null;
+				try {
+					if (response != null && (!response.trim().equals(""))) {
+						data = new String(response);
+						try {
+							if (response.length() < 4) {
+								log.info("No Response from Bank Server");
+								return isoresponse;
+							}
+							data = data.substring(4);
+						} catch (Exception exception) {
+							log.info("Exception in bank Response " + exception);
+						}
+
+						try {
+							isoresponse = response.trim().getBytes();
+						} catch (Exception e) {
+							log.info("Response Error :::: " + e);
+							e.printStackTrace();
+						}
+					} else {
+						log.info("No Response From Bank");
+						return isoresponse;
+					}
+				} catch (Exception es) {
+					log.info("Error in side response parsing " + es);
+				} finally {
+					responseEntity.getContent().close();
+				}
+				log.info("-------- End -------------");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return isoresponse;
+	}
+}

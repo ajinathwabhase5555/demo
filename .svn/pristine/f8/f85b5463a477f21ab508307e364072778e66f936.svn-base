@@ -1,0 +1,322 @@
+package com.bomweb;
+
+import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
+import org.bouncycastle.util.encoders.Base64;
+
+import com.bomweb.model.TransactionModelRequest;
+import com.bomweb.service.model.TransactionModel_IN;
+import com.bomweb.util.HashGenerator;
+import com.bomweb.util.FIUtility;
+
+public class ISO8583 {
+
+	private static byte[] sKeybyte;
+	private static byte[] bytehmac;
+	private static byte[] bioByte;
+	private static byte[] upto49;
+	private static byte[] de99;
+	private static byte[] de125;
+
+	// method for building data element ....ISO8583 message
+	public static byte[] getISOMsg(TransactionModelRequest objTransactionModelRequest, TransactionModel_IN in) {
+		try {
+			String[] DE = new String[130];
+			DE[1] = ((objTransactionModelRequest.getPrimaryAccountNumber()).length() < 10
+					? "0" + (objTransactionModelRequest.getPrimaryAccountNumber()).length()
+					: (objTransactionModelRequest.getPrimaryAccountNumber()).length())
+					+ (objTransactionModelRequest.getPrimaryAccountNumber());
+			DE[2] = objTransactionModelRequest.getProcessingCode();
+			DE[3] = FIUtility.addZero(objTransactionModelRequest.getTransactionAmount() + "00", 12);
+			DE[6] = objTransactionModelRequest.getTransactionDateTime();
+			DE[10] = objTransactionModelRequest.getStan();
+			DE[11] = objTransactionModelRequest.getLocalTransactionTime();
+			DE[12] = objTransactionModelRequest.getLocalTransactionDate();
+			DE[16] = objTransactionModelRequest.getLocalTransactionDate();
+			DE[17] = objTransactionModelRequest.getMerchantType();
+			DE[21] = objTransactionModelRequest.getPoshEntryMode();
+			DE[24] = objTransactionModelRequest.getPoshConditionCode();
+			DE[31] = ((objTransactionModelRequest.getAiic()).length() < 10
+					? "0" + (objTransactionModelRequest.getAiic()).length()
+					: (objTransactionModelRequest.getAiic()).length()) + (objTransactionModelRequest.getAiic());
+			DE[36] = objTransactionModelRequest.getRrn();
+			DE[40] = objTransactionModelRequest.getTerminalId();
+			DE[41] = objTransactionModelRequest.getVendorCode();
+			DE[42] = objTransactionModelRequest.getBcDetails();
+			DE[45] = FIUtility.addThreeZeroes(objTransactionModelRequest.getAgentDetails())
+					+ objTransactionModelRequest.getAgentDetails();
+			DE[48] = objTransactionModelRequest.getCurrencyCode();
+			DE[55] = in.getDe56();
+			DE[56] = in.getDe57();
+
+			DE[72] = date();
+
+			upto49 = (DE[1] + DE[2] + DE[3] + DE[6] + DE[10] + DE[11] + DE[12] + DE[16] + DE[17] + DE[21] + DE[24]
+					+ DE[31] + DE[36] + DE[40] + DE[41] + DE[42] + DE[45] + DE[48] + DE[55] + DE[56] + DE[72])
+							.getBytes();
+			DE[99] = ("1.8".length() < 10 ? "0" + "1.8".length() : "1.8".length()) + "1.8";
+
+//			System.out.println("***************** Transaction Type : " + in.getTransactionType());
+			/*if (in.getTransactionType().equals("ACCOUNT")
+					&& objTransactionModelRequest.getProcessingCode().equals("310000")) {
+				DE[101] = "11" + in.getAccountNo();
+				de99 = (DE[99] + DE[101]).getBytes();
+			} else if (in.getTransactionType().equals("ACCOUNT")
+					&& objTransactionModelRequest.getProcessingCode().equals("010000")) {
+				DE[101] = "11" + in.getAccountNo();
+				de99 = (DE[99] + DE[101]).getBytes();
+			} else if (in.getTransactionType().equals("ACCOUNT")
+					&& objTransactionModelRequest.getProcessingCode().equals("210000")) {
+				DE[102] = "11" + in.getAccountNo();
+				de99 = (DE[99] + DE[102]).getBytes();
+			} else {
+				de99 = DE[99].getBytes();
+			}*/
+			de99 = DE[99].getBytes();
+			DE[110] = "";
+
+			bioByte = Base64.decode(in.getBiometric());
+			if (bioByte.length > 992) {
+				DE[111] = "";
+			}
+
+			String uid = objTransactionModelRequest.getPrimaryAccountNumber()
+					.substring(objTransactionModelRequest.getPrimaryAccountNumber().length() - 12);
+			if (in.getProcessingCode().equals("310000") || in.getProcessingCode().equals("120000"))
+				uid = uid + "~" + DE[36];
+			else if (in.getProcessingCode().equals("010000") || in.getProcessingCode().equals("210000"))
+				uid = uid + "~" + DE[3] + "~" + DE[36];
+			else if (in.getProcessingCode().equals("400000")) {
+				String uid2 = in.getDe120().substring(in.getDe120().length() - 12);
+				uid = uid2 + "~" + uid + "~" + DE[3] + "~" + DE[36];
+			}
+			String de123 = HashGenerator.hashing(uid, DE[6]);
+			System.out.println("************ HMAC UID : " + uid);
+			DE[122] = FIUtility.addThreeZeroes(de123) + de123;
+
+			String de126 = in.getDe126();
+			DE[125] = FIUtility.addThreeZeroes(de126) + de126;
+			if (in.getProcessingCode().equals("400000")) {
+				DE[119] = in.getDe120();
+				de125 = (DE[119] + DE[122] + DE[125]).getBytes();
+			} else {
+				de125 = (DE[122] + DE[125]).getBytes();
+			}
+			DE[126] = "";
+
+			byte[] isoMessage = Build(DE, in);
+			// for (int i = 0; i < DE.length; i++)
+			// if (DE[i] != null)
+			// System.out.println("[" + (i + 1) + "] ---> " + DE[i]);
+			return isoMessage;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return null;
+	}
+
+	private static String date() {
+		Date date = new Date();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd");
+		String strDate = formatter.format(date);
+		return strDate;
+	}
+
+	private static byte[] Build(String[] DE, TransactionModel_IN in) {
+		String newISO = "";
+		String newDE1 = "";
+		for (int I = 1; I <= 63; I++) {
+			if (DE[I] != null && !DE[I].trim().equals("")) {
+				newDE1 += "1";
+			} else {
+				newDE1 += "0";
+			}
+		}
+		newDE1 = "1" + newDE1;
+		String newDE2 = "";
+
+		for (int i = 64; i <= 127; i++) {
+			if (DE[i] != null) {
+				newDE2 = newDE2 + "1";
+			} else {
+				newDE2 = newDE2 + "0";
+			}
+		}
+		newDE2 = "0" + newDE2;
+		for (String str : DE) {
+			if (str != null) {
+				newISO = newISO + str;
+			}
+		}
+
+		sKeybyte = Base64.decode(in.getSkey());
+		bytehmac = Base64.decode(in.getHmac());
+
+		String hexconString = getHexValue(newDE1).toUpperCase();
+		String hexconString2 = getHexValue(newDE2).toUpperCase();
+		newISO = hexconString + hexconString2 + newISO;
+		newISO = Integer.toString(("1200" + newISO).length()) + "1200" + newISO;
+
+		byte[] primary = hexconString.getBytes();
+		byte[] secondary = hexconString2.getBytes();
+
+		String[] data = new String[10];
+		data[1] = "430001" + sKeybyte.length;
+		byte[] str = data[1].getBytes();
+
+		String ci = "002" + FIUtility.addThreeZeroes(in.getCi()) + in.getCi();
+		data[2] = "0030" + bytehmac.length;
+		byte[] hmaclength = data[2].getBytes();
+		String authCode = "STGBOM0001";
+		String ac = "0040" + authCode.length() + authCode;
+		String sa = "0050" + authCode.length() + authCode;
+		String licenseKey = "MM1MYbM-7t9Jw11XXKUCeSVBPPchILyPqI28xTEZQEmoM3CT1xB8xvU";
+
+		String lk = "0060" + licenseKey.length() + licenseKey;
+		String rc = "007001Y";
+
+		byte[] expdate = ci.getBytes();
+		byte[] de127 = (ac + sa + lk + rc).getBytes();
+		byte[] mti = "1200".getBytes();
+
+		byte[] prefixBytes = "FPD".getBytes();
+		int prefixLen = prefixBytes.length;
+
+		// Get bytes of decoded PID
+		byte[] pidDecodedBytes = Base64.decode(in.getBiometric());
+		int pidLen = pidDecodedBytes.length;
+
+		if (pidLen < 992) {
+			prefixBytes = "FPD0".getBytes();
+			prefixLen = prefixBytes.length;
+		}
+		// Append PID length as 4 bytes
+		String pidLenStr = Integer.valueOf(pidLen).toString();
+		byte[] pidLenBytes = pidLenStr.getBytes();
+
+		// Copy the above data into a new byte[]
+		int offset = 0;
+		byte[] pid = new byte[prefixLen + pidLenBytes.length + pidLen];
+
+		// Copy FPD
+		System.arraycopy(prefixBytes, 0, pid, offset, prefixLen);
+
+		// Copy PID length
+		offset = offset + prefixLen;
+		System.arraycopy(pidLenBytes, 0, pid, offset, pidLenBytes.length);
+
+		// Copy PID
+		offset = offset + pidLenBytes.length;
+		System.arraycopy(pidDecodedBytes, 0, pid, offset, pidLen);
+
+		// Split PID byte[] into 999 equal parts
+		int blockSize = 999;
+		int blockCount = (pid.length + blockSize - 1) / blockSize;
+
+		List<byte[]> splitPID = new ArrayList<byte[]>();
+		byte[] range = null;
+		for (int i = 1; i < blockCount; i++) {
+			int idx = (i - 1) * blockSize;
+			range = Arrays.copyOfRange(pid, idx, idx + blockSize);
+			splitPID.add(range);
+		}
+
+		// Last chunk
+		int end = -1;
+		if (pid.length % blockSize == 0) {
+			end = pid.length;
+		} else {
+			end = pid.length % blockSize + blockSize * (blockCount - 1);
+		}
+		range = Arrays.copyOfRange(pid, (blockCount - 1) * blockSize, end);
+		splitPID.add(range);
+
+		// Populate data elements 111, 112, 113 with byte[] of PID
+		byte[] bio1 = null;
+		if (!splitPID.isEmpty()) {
+			if (splitPID.size() > 0) {
+				byte[] biodata = splitPID.get(0);
+				int len = splitPID.get(0).length;
+				data[3] = Integer.toString(len);
+				byte[] boi1len = data[3].getBytes();
+				bio1 = new byte[boi1len.length + biodata.length];
+				System.arraycopy(boi1len, 0, bio1, 0, boi1len.length);
+				System.arraycopy(biodata, 0, bio1, boi1len.length, biodata.length);
+				if (bioByte.length < 992) {
+					bioByte = new byte[boi1len.length + biodata.length];
+					System.arraycopy(boi1len, 0, bioByte, 0, boi1len.length);
+					System.arraycopy(biodata, 0, bioByte, boi1len.length, biodata.length);
+				}
+			}
+			if (splitPID.size() > 1) {
+				byte[] bio2 = splitPID.get(1);
+				data[4] = FIUtility.addThreeZeroes(new String(bio2));
+				byte[] b = data[4].getBytes();
+				bioByte = new byte[bio1.length + b.length + bio2.length];
+				System.arraycopy(bio1, 0, bioByte, 0, bio1.length);
+				System.arraycopy(b, 0, bioByte, bio1.length, b.length);
+				System.arraycopy(bio2, 0, bioByte, (bio1.length + b.length), bio2.length);
+			}
+			if (splitPID.size() > 2) {
+			}
+		}
+
+		byte[] msg = new byte[mti.length + secondary.length + primary.length + upto49.length + de99.length
+				+ bioByte.length + de125.length + str.length + sKeybyte.length + expdate.length + hmaclength.length
+				+ bytehmac.length + de127.length];
+
+		System.arraycopy(mti, 0, msg, 0, mti.length);
+		System.arraycopy(primary, 0, msg, mti.length, primary.length);
+		System.arraycopy(secondary, 0, msg, (mti.length + primary.length), secondary.length);
+		System.arraycopy(upto49, 0, msg, (mti.length + primary.length + secondary.length), upto49.length);
+		System.arraycopy(de99, 0, msg, (mti.length + primary.length + secondary.length + upto49.length), de99.length);
+		System.arraycopy(bioByte, 0, msg,
+				(mti.length + primary.length + secondary.length + upto49.length + de99.length), bioByte.length);
+		System.arraycopy(de125, 0, msg,
+				(mti.length + primary.length + secondary.length + upto49.length + de99.length + bioByte.length),
+				de125.length);
+		System.arraycopy(str, 0, msg, (mti.length + primary.length + secondary.length + upto49.length + de99.length
+				+ bioByte.length + de125.length), str.length);
+		System.arraycopy(sKeybyte, 0, msg, (mti.length + primary.length + secondary.length + upto49.length + de99.length
+				+ bioByte.length + de125.length + str.length), sKeybyte.length);
+		System.arraycopy(expdate, 0, msg, (mti.length + primary.length + secondary.length + upto49.length + de99.length
+				+ bioByte.length + de125.length + str.length + sKeybyte.length), expdate.length);
+		System.arraycopy(
+				hmaclength, 0, msg, (mti.length + primary.length + secondary.length + upto49.length + de99.length
+						+ bioByte.length + de125.length + str.length + sKeybyte.length + expdate.length),
+				hmaclength.length);
+		System.arraycopy(bytehmac, 0, msg,
+				(mti.length + primary.length + secondary.length + upto49.length + de99.length + bioByte.length
+						+ de125.length + str.length + sKeybyte.length + expdate.length + hmaclength.length),
+				bytehmac.length);
+		System.arraycopy(de127, 0, msg,
+				(mti.length + primary.length + secondary.length + upto49.length + de99.length + bioByte.length
+						+ de125.length + str.length + sKeybyte.length + expdate.length + hmaclength.length
+						+ bytehmac.length),
+				de127.length);
+
+		data[4] = "" + msg.length;
+		byte[] isolength = data[4].getBytes();
+		byte[] isomsg = new byte[msg.length + isolength.length];
+		System.arraycopy(isolength, 0, isomsg, 0, isolength.length);
+		System.arraycopy(msg, 0, isomsg, isolength.length, msg.length);
+		return isomsg;
+	}
+
+	public static String getHexValue(String cellValue) {
+		BigInteger b = new BigInteger(cellValue, 2);
+		String str = b.toString(16);
+		while (str.length() < 16) {
+			str = "0" + str;
+		}
+		return str;
+
+	}
+
+}

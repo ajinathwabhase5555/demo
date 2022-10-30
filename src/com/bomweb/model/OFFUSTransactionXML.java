@@ -1,0 +1,1240 @@
+/**
+ * 
+ */
+package com.bomweb.model;
+
+import java.sql.Blob;
+import java.util.Date;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Transient;
+
+/**
+ * @author DATTU
+ *
+ */
+@Entity
+@Table(name = "tran_reqrsp_offus_xml")
+public class OFFUSTransactionXML {
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "OFFUSTRANSACTION_SEQ")
+	@SequenceGenerator(name = "OFFUSTRANSACTION_SEQ", sequenceName = "OFFUSTRANSACTION_SEQ", allocationSize = 0)
+	@Column(name = "LOG_ID")
+	private int id;
+	@Column(name = "TRN_DATE")
+	@Temporal(TemporalType.DATE)
+	private Date currentDate;
+	@Column(name = "REQDMP")
+	private Blob requestMsg;
+	@Column(name = "RSPDMP")
+	private Blob responseMsg;
+	@Column(name = "REQ_TxnId")
+	private String REQ_txnId;
+	@Column(name = "REQ_tspVdrId")
+	private String REQ_tspVdrId;
+	@Column(name = "REQ_txnOrigin")
+	private String REQ_txnOrigin;
+	@Column(name = "REQ_msgFmtVer")
+	private String REQ_msgFmtVer;
+	@Column(name = "REQ_appVersion")
+	private String REQ_appVersion;
+	@Column(name = "REQ_funcCode")
+	private String REQ_funcCode;
+	@Column(name = "REQ_pan")
+	private String REQ_pan;
+	@Column(name = "REQ_procCode")
+	private String REQ_procCode;
+	@Column(name = "REQ_txnDateTime")
+	private String REQ_txnDateTime;
+	@Column(name = "REQ_mcc")
+	private String REQ_mcc;
+	@Column(name = "REQ_posEntryMode")
+	private String REQ_posEntryMode;
+	@Column(name = "REQ_posCode")
+	private String REQ_posCode;
+	@Column(name = "REQ_acqId")
+	private String REQ_acqId;
+	@Column(name = "REQ_track2Data")
+	private String REQ_track2Data;
+	@Column(name = "REQ_rrn")
+	private String REQ_rrn;
+	@Column(name = "REQ_terminalId")
+	private String REQ_terminalId;
+	@Column(name = "REQ_caId")
+	private String REQ_caId;
+	@Column(name = "REQ_caLocn")
+	private String REQ_caLocn;
+	@Column(name = "REQ_terminalData")
+	private String REQ_terminalData;
+	@Column(name = "REQ_agentId")
+	private String REQ_agentId;
+	@Column(name = "REQ_serviceChrg")
+	private String REQ_serviceChrg;
+	@Column(name = "REQ_txnMode")
+	private String REQ_txnMode;
+	@Column(name = "REQ_orgTxnRefId")
+	private String REQ_orgTxnRefId;
+	@Column(name = "REQ_narration")
+	private String REQ_narration;
+	@Column(name = "REQ_txnHmac")
+	private String REQ_txnHmac;
+	@Column(name = "REQ_uniqueNo")
+	private String REQ_uniqueNo;
+	@Column(name = "REQ_expDate")
+	private String REQ_expDate;
+	@Column(name = "REQ_setlDate")
+	private String REQ_setlDate;
+	@Column(name = "REQ_posCaptCode")
+	private String REQ_posCaptCode;
+	@Column(name = "REQ_refSeq")
+	private String REQ_refSeq;
+	@Column(name = "REQ_amount")
+	private String REQ_amount;
+	@Column(name = "REQ_currCode")
+	private String REQ_currCode;
+	@Column(name = "REQ_partyOrg")
+	private String REQ_partyOrg;
+	@Column(name = "REQ_partyIdType")
+	private String REQ_partyIdType;
+	@Column(name = "REQ_partyIdValue")
+	private String REQ_partyIdValue;
+	@Column(name = "REQ_partyOrgs")
+	private String REQ_partyOrgs;
+	@Column(name = "REQ_partyIdTypes")
+	private String REQ_partyIdTypes;
+	@Column(name = "REQ_partyIdValues")
+	private String REQ_partyIdValues;
+	
+	@Column(name = "RSP_txnId")
+	private String RSP_txnId;
+	@Column(name = "RSP_tspVdrId")
+	private String RSP_tspVdrId;
+	@Column(name = "RSP_respCode")
+	private String RSP_respCode;
+	@Column(name = "RSP_respDesc")
+	private String RSP_respDesc;
+	@Column(name = "RSP_msgFmtVer")
+	private String RSP_msgFmtVer;
+	@Column(name = "RSP_appVersion")
+	private String RSP_appVersion;
+	@Column(name = "RSP_funcCode")
+	private String RSP_funcCode;
+	@Column(name = "RSP_pan")
+	private String RSP_pan;
+	@Column(name = "RSP_procCode")
+	private String RSP_procCode;
+	@Column(name = "RSP_txnDateTime")
+	private String RSP_txnDateTime;
+	@Column(name = "RSP_track2Data")
+	private String RSP_track2Data;
+	@Column(name = "RSP_rrn")
+	private String RSP_rrn;
+	@Column(name = "RSP_terminalId")
+	private String RSP_terminalId;
+	@Column(name = "RSP_agentId")
+	private String RSP_agentId;
+	@Column(name = "RSP_serviceChrg")
+	private String RSP_serviceChrg;
+	@Column(name = "RSP_txnMode")
+	private String RSP_txnMode;
+	@Column(name = "RSP_orgTxnRefId")
+	private String RSP_orgTxnRefId;
+	@Column(name = "RSP_narration")
+	private String RSP_narration;
+	@Column(name = "RSP_gatewayRRN")
+	private String RSP_gatewayRRN;
+	@Column(name = "RSP_txnHmac")
+	private String RSP_txnHmac;
+	@Column(name = "RSP_journalNo")
+	private String RSP_journalNo;
+	@Column(name = "RSP_authCode")
+	private String RSP_authCode;
+	@Column(name = "RSP_uidToken")
+	private String RSP_uidToken;
+	@Column(name = "RSP_partyOrg")
+	private String RSP_partyOrg;
+	@Column(name = "RSP_partyIdType")
+	private String RSP_partyIdType;
+	@Column(name = "RSP_partyIdValue")
+	private String RSP_partyIdValue;
+	@Column(name = "RSP_actualBalance")
+	private String RSP_actualBalance;
+	@Column(name = "REFNO")
+	private String refno;
+
+	@Transient
+	private byte[] tranReq;
+
+	/**
+	 * @return the id
+	 */
+	public int getId() {
+		return id;
+	}
+
+	/**
+	 * @param id
+	 *            the id to set
+	 */
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	/**
+	 * @return the currentDate
+	 */
+	public Date getCurrentDate() {
+		return currentDate;
+	}
+
+	/**
+	 * @param currentDate
+	 *            the currentDate to set
+	 */
+	public void setCurrentDate(Date currentDate) {
+		this.currentDate = currentDate;
+	}
+
+	/**
+	 * @return the requestMsg
+	 */
+	public Blob getRequestMsg() {
+		return requestMsg;
+	}
+
+	/**
+	 * @param requestMsg
+	 *            the requestMsg to set
+	 */
+	public void setRequestMsg(Blob requestMsg) {
+		this.requestMsg = requestMsg;
+	}
+
+	/**
+	 * @return the responseMsg
+	 */
+	public Blob getResponseMsg() {
+		return responseMsg;
+	}
+
+	/**
+	 * @param responseMsg
+	 *            the responseMsg to set
+	 */
+	public void setResponseMsg(Blob responseMsg) {
+		this.responseMsg = responseMsg;
+	}
+
+	/**
+	 * @return the rEQ_txnId
+	 */
+	public String getREQ_txnId() {
+		return REQ_txnId;
+	}
+
+	/**
+	 * @param rEQ_txnId
+	 *            the rEQ_txnId to set
+	 */
+	public void setREQ_txnId(String rEQ_txnId) {
+		REQ_txnId = rEQ_txnId;
+	}
+
+	/**
+	 * @return the rEQ_tspVdrId
+	 */
+	public String getREQ_tspVdrId() {
+		return REQ_tspVdrId;
+	}
+
+	/**
+	 * @param rEQ_tspVdrId
+	 *            the rEQ_tspVdrId to set
+	 */
+	public void setREQ_tspVdrId(String rEQ_tspVdrId) {
+		REQ_tspVdrId = rEQ_tspVdrId;
+	}
+
+	/**
+	 * @return the rEQ_txnOrigin
+	 */
+	public String getREQ_txnOrigin() {
+		return REQ_txnOrigin;
+	}
+
+	/**
+	 * @param rEQ_txnOrigin
+	 *            the rEQ_txnOrigin to set
+	 */
+	public void setREQ_txnOrigin(String rEQ_txnOrigin) {
+		REQ_txnOrigin = rEQ_txnOrigin;
+	}
+
+	/**
+	 * @return the rEQ_msgFmtVer
+	 */
+	public String getREQ_msgFmtVer() {
+		return REQ_msgFmtVer;
+	}
+
+	/**
+	 * @param rEQ_msgFmtVer
+	 *            the rEQ_msgFmtVer to set
+	 */
+	public void setREQ_msgFmtVer(String rEQ_msgFmtVer) {
+		REQ_msgFmtVer = rEQ_msgFmtVer;
+	}
+
+	/**
+	 * @return the rEQ_appVersion
+	 */
+	public String getREQ_appVersion() {
+		return REQ_appVersion;
+	}
+
+	/**
+	 * @param rEQ_appVersion
+	 *            the rEQ_appVersion to set
+	 */
+	public void setREQ_appVersion(String rEQ_appVersion) {
+		REQ_appVersion = rEQ_appVersion;
+	}
+
+	/**
+	 * @return the rEQ_funcCode
+	 */
+	public String getREQ_funcCode() {
+		return REQ_funcCode;
+	}
+
+	/**
+	 * @param rEQ_funcCode
+	 *            the rEQ_funcCode to set
+	 */
+	public void setREQ_funcCode(String rEQ_funcCode) {
+		REQ_funcCode = rEQ_funcCode;
+	}
+
+	/**
+	 * @return the rEQ_pan
+	 */
+	public String getREQ_pan() {
+		return REQ_pan;
+	}
+
+	/**
+	 * @param rEQ_pan
+	 *            the rEQ_pan to set
+	 */
+	public void setREQ_pan(String rEQ_pan) {
+		REQ_pan = rEQ_pan;
+	}
+
+	/**
+	 * @return the rEQ_procCode
+	 */
+	public String getREQ_procCode() {
+		return REQ_procCode;
+	}
+
+	/**
+	 * @param rEQ_procCode
+	 *            the rEQ_procCode to set
+	 */
+	public void setREQ_procCode(String rEQ_procCode) {
+		REQ_procCode = rEQ_procCode;
+	}
+
+	/**
+	 * @return the rEQ_txnDateTime
+	 */
+	public String getREQ_txnDateTime() {
+		return REQ_txnDateTime;
+	}
+
+	/**
+	 * @param rEQ_txnDateTime
+	 *            the rEQ_txnDateTime to set
+	 */
+	public void setREQ_txnDateTime(String rEQ_txnDateTime) {
+		REQ_txnDateTime = rEQ_txnDateTime;
+	}
+
+	/**
+	 * @return the rEQ_mcc
+	 */
+	public String getREQ_mcc() {
+		return REQ_mcc;
+	}
+
+	/**
+	 * @param rEQ_mcc
+	 *            the rEQ_mcc to set
+	 */
+	public void setREQ_mcc(String rEQ_mcc) {
+		REQ_mcc = rEQ_mcc;
+	}
+
+	/**
+	 * @return the rEQ_posEntryMode
+	 */
+	public String getREQ_posEntryMode() {
+		return REQ_posEntryMode;
+	}
+
+	/**
+	 * @param rEQ_posEntryMode
+	 *            the rEQ_posEntryMode to set
+	 */
+	public void setREQ_posEntryMode(String rEQ_posEntryMode) {
+		REQ_posEntryMode = rEQ_posEntryMode;
+	}
+
+	/**
+	 * @return the rEQ_posCode
+	 */
+	public String getREQ_posCode() {
+		return REQ_posCode;
+	}
+
+	/**
+	 * @param rEQ_posCode
+	 *            the rEQ_posCode to set
+	 */
+	public void setREQ_posCode(String rEQ_posCode) {
+		REQ_posCode = rEQ_posCode;
+	}
+
+	/**
+	 * @return the rEQ_acqId
+	 */
+	public String getREQ_acqId() {
+		return REQ_acqId;
+	}
+
+	/**
+	 * @param rEQ_acqId
+	 *            the rEQ_acqId to set
+	 */
+	public void setREQ_acqId(String rEQ_acqId) {
+		REQ_acqId = rEQ_acqId;
+	}
+
+	/**
+	 * @return the rEQ_track2Data
+	 */
+	public String getREQ_track2Data() {
+		return REQ_track2Data;
+	}
+
+	/**
+	 * @param rEQ_track2Data
+	 *            the rEQ_track2Data to set
+	 */
+	public void setREQ_track2Data(String rEQ_track2Data) {
+		REQ_track2Data = rEQ_track2Data;
+	}
+
+	/**
+	 * @return the rEQ_rrn
+	 */
+	public String getREQ_rrn() {
+		return REQ_rrn;
+	}
+
+	/**
+	 * @param rEQ_rrn
+	 *            the rEQ_rrn to set
+	 */
+	public void setREQ_rrn(String rEQ_rrn) {
+		REQ_rrn = rEQ_rrn;
+	}
+
+	/**
+	 * @return the rEQ_terminalId
+	 */
+	public String getREQ_terminalId() {
+		return REQ_terminalId;
+	}
+
+	/**
+	 * @param rEQ_terminalId
+	 *            the rEQ_terminalId to set
+	 */
+	public void setREQ_terminalId(String rEQ_terminalId) {
+		REQ_terminalId = rEQ_terminalId;
+	}
+
+	/**
+	 * @return the rEQ_caId
+	 */
+	public String getREQ_caId() {
+		return REQ_caId;
+	}
+
+	/**
+	 * @param rEQ_caId
+	 *            the rEQ_caId to set
+	 */
+	public void setREQ_caId(String rEQ_caId) {
+		REQ_caId = rEQ_caId;
+	}
+
+	/**
+	 * @return the rEQ_caLocn
+	 */
+	public String getREQ_caLocn() {
+		return REQ_caLocn;
+	}
+
+	/**
+	 * @param rEQ_caLocn
+	 *            the rEQ_caLocn to set
+	 */
+	public void setREQ_caLocn(String rEQ_caLocn) {
+		REQ_caLocn = rEQ_caLocn;
+	}
+
+	/**
+	 * @return the rEQ_terminalData
+	 */
+	public String getREQ_terminalData() {
+		return REQ_terminalData;
+	}
+
+	/**
+	 * @param rEQ_terminalData
+	 *            the rEQ_terminalData to set
+	 */
+	public void setREQ_terminalData(String rEQ_terminalData) {
+		REQ_terminalData = rEQ_terminalData;
+	}
+
+	/**
+	 * @return the rEQ_agentId
+	 */
+	public String getREQ_agentId() {
+		return REQ_agentId;
+	}
+
+	/**
+	 * @param rEQ_agentId
+	 *            the rEQ_agentId to set
+	 */
+	public void setREQ_agentId(String rEQ_agentId) {
+		REQ_agentId = rEQ_agentId;
+	}
+
+	/**
+	 * @return the rEQ_serviceChrg
+	 */
+	public String getREQ_serviceChrg() {
+		return REQ_serviceChrg;
+	}
+
+	/**
+	 * @param rEQ_serviceChrg
+	 *            the rEQ_serviceChrg to set
+	 */
+	public void setREQ_serviceChrg(String rEQ_serviceChrg) {
+		REQ_serviceChrg = rEQ_serviceChrg;
+	}
+
+	/**
+	 * @return the rEQ_txnMode
+	 */
+	public String getREQ_txnMode() {
+		return REQ_txnMode;
+	}
+
+	/**
+	 * @param rEQ_txnMode
+	 *            the rEQ_txnMode to set
+	 */
+	public void setREQ_txnMode(String rEQ_txnMode) {
+		REQ_txnMode = rEQ_txnMode;
+	}
+
+	/**
+	 * @return the rEQ_orgTxnRefId
+	 */
+	public String getREQ_orgTxnRefId() {
+		return REQ_orgTxnRefId;
+	}
+
+	/**
+	 * @param rEQ_orgTxnRefId
+	 *            the rEQ_orgTxnRefId to set
+	 */
+	public void setREQ_orgTxnRefId(String rEQ_orgTxnRefId) {
+		REQ_orgTxnRefId = rEQ_orgTxnRefId;
+	}
+
+	/**
+	 * @return the rEQ_narration
+	 */
+	public String getREQ_narration() {
+		return REQ_narration;
+	}
+
+	/**
+	 * @param rEQ_narration
+	 *            the rEQ_narration to set
+	 */
+	public void setREQ_narration(String rEQ_narration) {
+		REQ_narration = rEQ_narration;
+	}
+
+	/**
+	 * @return the rEQ_txnHmac
+	 */
+	public String getREQ_txnHmac() {
+		return REQ_txnHmac;
+	}
+
+	/**
+	 * @param rEQ_txnHmac
+	 *            the rEQ_txnHmac to set
+	 */
+	public void setREQ_txnHmac(String rEQ_txnHmac) {
+		REQ_txnHmac = rEQ_txnHmac;
+	}
+
+	/**
+	 * @return the rEQ_uniqueNo
+	 */
+	public String getREQ_uniqueNo() {
+		return REQ_uniqueNo;
+	}
+
+	/**
+	 * @param rEQ_uniqueNo
+	 *            the rEQ_uniqueNo to set
+	 */
+	public void setREQ_uniqueNo(String rEQ_uniqueNo) {
+		REQ_uniqueNo = rEQ_uniqueNo;
+	}
+
+	/**
+	 * @return the rEQ_expDate
+	 */
+	public String getREQ_expDate() {
+		return REQ_expDate;
+	}
+
+	/**
+	 * @param rEQ_expDate
+	 *            the rEQ_expDate to set
+	 */
+	public void setREQ_expDate(String rEQ_expDate) {
+		REQ_expDate = rEQ_expDate;
+	}
+
+	/**
+	 * @return the rEQ_setlDate
+	 */
+	public String getREQ_setlDate() {
+		return REQ_setlDate;
+	}
+
+	/**
+	 * @param rEQ_setlDate
+	 *            the rEQ_setlDate to set
+	 */
+	public void setREQ_setlDate(String rEQ_setlDate) {
+		REQ_setlDate = rEQ_setlDate;
+	}
+
+	/**
+	 * @return the rEQ_posCaptCode
+	 */
+	public String getREQ_posCaptCode() {
+		return REQ_posCaptCode;
+	}
+
+	/**
+	 * @param rEQ_posCaptCode
+	 *            the rEQ_posCaptCode to set
+	 */
+	public void setREQ_posCaptCode(String rEQ_posCaptCode) {
+		REQ_posCaptCode = rEQ_posCaptCode;
+	}
+
+	/**
+	 * @return the rEQ_refSeq
+	 */
+	public String getREQ_refSeq() {
+		return REQ_refSeq;
+	}
+
+	/**
+	 * @param rEQ_refSeq
+	 *            the rEQ_refSeq to set
+	 */
+	public void setREQ_refSeq(String rEQ_refSeq) {
+		REQ_refSeq = rEQ_refSeq;
+	}
+
+	/**
+	 * @return the rEQ_amount
+	 */
+	public String getREQ_amount() {
+		return REQ_amount;
+	}
+
+	/**
+	 * @param rEQ_amount
+	 *            the rEQ_amount to set
+	 */
+	public void setREQ_amount(String rEQ_amount) {
+		REQ_amount = rEQ_amount;
+	}
+
+	/**
+	 * @return the rEQ_currCode
+	 */
+	public String getREQ_currCode() {
+		return REQ_currCode;
+	}
+
+	/**
+	 * @param rEQ_currCode
+	 *            the rEQ_currCode to set
+	 */
+	public void setREQ_currCode(String rEQ_currCode) {
+		REQ_currCode = rEQ_currCode;
+	}
+
+	/**
+	 * @return the rEQ_partyOrg
+	 */
+	public String getREQ_partyOrg() {
+		return REQ_partyOrg;
+	}
+
+	/**
+	 * @param rEQ_partyOrg
+	 *            the rEQ_partyOrg to set
+	 */
+	public void setREQ_partyOrg(String rEQ_partyOrg) {
+		REQ_partyOrg = rEQ_partyOrg;
+	}
+
+	/**
+	 * @return the rEQ_partyIdType
+	 */
+	public String getREQ_partyIdType() {
+		return REQ_partyIdType;
+	}
+
+	/**
+	 * @param rEQ_partyIdType
+	 *            the rEQ_partyIdType to set
+	 */
+	public void setREQ_partyIdType(String rEQ_partyIdType) {
+		REQ_partyIdType = rEQ_partyIdType;
+	}
+	/**
+	 * @return the rEQ_partyIdValue
+	 */
+	public String getREQ_partyIdValue() {
+		return REQ_partyIdValue;
+	}
+
+	/**
+	 * @param rEQ_partyIdValue
+	 *            the rEQ_partyIdValue to set
+	 */
+	public void setREQ_partyIdValue(String rEQ_partyIdValue) {
+		REQ_partyIdValue = rEQ_partyIdValue;
+	}
+
+	/**
+	 * @return the rEQ_partyOrgs
+	 */
+	public String getREQ_partyOrgs() {
+		return REQ_partyOrgs;
+	}
+
+	/**
+	 * @param rEQ_partyOrgs
+	 *            the rEQ_partyOrgs to set
+	 */
+	public void setREQ_partyOrgs(String rEQ_partyOrgs) {
+		REQ_partyOrgs = rEQ_partyOrgs;
+	}
+
+	/**
+	 * @return the rEQ_partyIdTypes
+	 */
+	public String getREQ_partyIdTypes() {
+		return REQ_partyIdTypes;
+	}
+
+	/**
+	 * @param rEQ_partyIdTypses
+	 *            the rEQ_partyIdTypes to set
+	 */
+	public void setREQ_partyIdTypes(String rEQ_partyIdTypes) {
+		REQ_partyIdTypes = rEQ_partyIdTypes;
+	}
+
+
+	/**
+	 * @return the rEQ_partyIdValues
+	 */
+	public String getREQ_partyIdValues() {
+		return REQ_partyIdValues;
+	}
+
+	/**
+	 * @param rEQ_partyIdValue
+	 *            the rEQ_partyIdValue to set
+	 */
+	public void setREQ_partyIdValues(String rEQ_partyIdValues) {
+		REQ_partyIdValues = rEQ_partyIdValues;
+	}
+
+	/**
+	 * @return the rSP_txnId
+	 */
+	public String getRSP_txnId() {
+		return RSP_txnId;
+	}
+
+	/**
+	 * @param rSP_txnId
+	 *            the rSP_txnId to set
+	 */
+	public void setRSP_txnId(String rSP_txnId) {
+		RSP_txnId = rSP_txnId;
+	}
+
+	/**
+	 * @return the rSP_tspVdrId
+	 */
+	public String getRSP_tspVdrId() {
+		return RSP_tspVdrId;
+	}
+
+	/**
+	 * @param rSP_tspVdrId
+	 *            the rSP_tspVdrId to set
+	 */
+	public void setRSP_tspVdrId(String rSP_tspVdrId) {
+		RSP_tspVdrId = rSP_tspVdrId;
+	}
+
+	/**
+	 * @return the rSP_respCode
+	 */
+	public String getRSP_respCode() {
+		return RSP_respCode;
+	}
+
+	/**
+	 * @param rSP_respCode
+	 *            the rSP_respCode to set
+	 */
+	public void setRSP_respCode(String rSP_respCode) {
+		RSP_respCode = rSP_respCode;
+	}
+
+	/**
+	 * @return the rSP_respDesc
+	 */
+	public String getRSP_respDesc() {
+		return RSP_respDesc;
+	}
+
+	/**
+	 * @param rSP_respDesc
+	 *            the rSP_respDesc to set
+	 */
+	public void setRSP_respDesc(String rSP_respDesc) {
+		RSP_respDesc = rSP_respDesc;
+	}
+
+	/**
+	 * @return the rSP_msgFmtVer
+	 */
+	public String getRSP_msgFmtVer() {
+		return RSP_msgFmtVer;
+	}
+
+	/**
+	 * @param rSP_msgFmtVer
+	 *            the rSP_msgFmtVer to set
+	 */
+	public void setRSP_msgFmtVer(String rSP_msgFmtVer) {
+		RSP_msgFmtVer = rSP_msgFmtVer;
+	}
+
+	/**
+	 * @return the rSP_appVersion
+	 */
+	public String getRSP_appVersion() {
+		return RSP_appVersion;
+	}
+
+	/**
+	 * @param rSP_appVersion
+	 *            the rSP_appVersion to set
+	 */
+	public void setRSP_appVersion(String rSP_appVersion) {
+		RSP_appVersion = rSP_appVersion;
+	}
+
+	/**
+	 * @return the rSP_funcCode
+	 */
+	public String getRSP_funcCode() {
+		return RSP_funcCode;
+	}
+
+	/**
+	 * @param rSP_funcCode
+	 *            the rSP_funcCode to set
+	 */
+	public void setRSP_funcCode(String rSP_funcCode) {
+		RSP_funcCode = rSP_funcCode;
+	}
+
+	/**
+	 * @return the rSP_pan
+	 */
+	public String getRSP_pan() {
+		return RSP_pan;
+	}
+
+	/**
+	 * @param rSP_pan
+	 *            the rSP_pan to set
+	 */
+	public void setRSP_pan(String rSP_pan) {
+		RSP_pan = rSP_pan;
+	}
+
+	/**
+	 * @return the rSP_procCode
+	 */
+	public String getRSP_procCode() {
+		return RSP_procCode;
+	}
+
+	/**
+	 * @param rSP_procCode
+	 *            the rSP_procCode to set
+	 */
+	public void setRSP_procCode(String rSP_procCode) {
+		RSP_procCode = rSP_procCode;
+	}
+
+	/**
+	 * @return the rSP_txnDateTime
+	 */
+	public String getRSP_txnDateTime() {
+		return RSP_txnDateTime;
+	}
+
+	/**
+	 * @param rSP_txnDateTime
+	 *            the rSP_txnDateTime to set
+	 */
+	public void setRSP_txnDateTime(String rSP_txnDateTime) {
+		RSP_txnDateTime = rSP_txnDateTime;
+	}
+
+	/**
+	 * @return the rSP_track2Data
+	 */
+	public String getRSP_track2Data() {
+		return RSP_track2Data;
+	}
+
+	/**
+	 * @param rSP_track2Data
+	 *            the rSP_track2Data to set
+	 */
+	public void setRSP_track2Data(String rSP_track2Data) {
+		RSP_track2Data = rSP_track2Data;
+	}
+
+	/**
+	 * @return the rSP_rrn
+	 */
+	public String getRSP_rrn() {
+		return RSP_rrn;
+	}
+
+	/**
+	 * @param rSP_rrn
+	 *            the rSP_rrn to set
+	 */
+	public void setRSP_rrn(String rSP_rrn) {
+		RSP_rrn = rSP_rrn;
+	}
+
+	/**
+	 * @return the rSP_terminalId
+	 */
+	public String getRSP_terminalId() {
+		return RSP_terminalId;
+	}
+
+	/**
+	 * @param rSP_terminalId
+	 *            the rSP_terminalId to set
+	 */
+	public void setRSP_terminalId(String rSP_terminalId) {
+		RSP_terminalId = rSP_terminalId;
+	}
+
+	/**
+	 * @return the rSP_agentId
+	 */
+	public String getRSP_agentId() {
+		return RSP_agentId;
+	}
+
+	/**
+	 * @param rSP_agentId
+	 *            the rSP_agentId to set
+	 */
+	public void setRSP_agentId(String rSP_agentId) {
+		RSP_agentId = rSP_agentId;
+	}
+
+	/**
+	 * @return the rSP_serviceChrg
+	 */
+	public String getRSP_serviceChrg() {
+		return RSP_serviceChrg;
+	}
+
+	/**
+	 * @param rSP_serviceChrg
+	 *            the rSP_serviceChrg to set
+	 */
+	public void setRSP_serviceChrg(String rSP_serviceChrg) {
+		RSP_serviceChrg = rSP_serviceChrg;
+	}
+
+	/**
+	 * @return the rSP_txnMode
+	 */
+	public String getRSP_txnMode() {
+		return RSP_txnMode;
+	}
+
+	/**
+	 * @param rSP_txnMode
+	 *            the rSP_txnMode to set
+	 */
+	public void setRSP_txnMode(String rSP_txnMode) {
+		RSP_txnMode = rSP_txnMode;
+	}
+
+	/**
+	 * @return the rSP_orgTxnRefId
+	 */
+	public String getRSP_orgTxnRefId() {
+		return RSP_orgTxnRefId;
+	}
+
+	/**
+	 * @param rSP_orgTxnRefId
+	 *            the rSP_orgTxnRefId to set
+	 */
+	public void setRSP_orgTxnRefId(String rSP_orgTxnRefId) {
+		RSP_orgTxnRefId = rSP_orgTxnRefId;
+	}
+
+	/**
+	 * @return the rSP_narration
+	 */
+	public String getRSP_narration() {
+		return RSP_narration;
+	}
+
+	/**
+	 * @param rSP_narration
+	 *            the rSP_narration to set
+	 */
+	public void setRSP_narration(String rSP_narration) {
+		RSP_narration = rSP_narration;
+	}
+
+	/**
+	 * @return the rSP_gatewayRRN
+	 */
+	public String getRSP_gatewayRRN() {
+		return RSP_gatewayRRN;
+	}
+
+	/**
+	 * @param rSP_gatewayRRN
+	 *            the rSP_gatewayRRN to set
+	 */
+	public void setRSP_gatewayRRN(String rSP_gatewayRRN) {
+		RSP_gatewayRRN = rSP_gatewayRRN;
+	}
+
+	/**
+	 * @return the rSP_txnHmac
+	 */
+	public String getRSP_txnHmac() {
+		return RSP_txnHmac;
+	}
+
+	/**
+	 * @param rSP_txnHmac
+	 *            the rSP_txnHmac to set
+	 */
+	public void setRSP_txnHmac(String rSP_txnHmac) {
+		RSP_txnHmac = rSP_txnHmac;
+	}
+
+	/**
+	 * @return the rSP_journalNo
+	 */
+	public String getRSP_journalNo() {
+		return RSP_journalNo;
+	}
+
+	/**
+	 * @param rSP_journalNo
+	 *            the rSP_journalNo to set
+	 */
+	public void setRSP_journalNo(String rSP_journalNo) {
+		RSP_journalNo = rSP_journalNo;
+	}
+
+	/**
+	 * @return the rSP_authCode
+	 */
+	public String getRSP_authCode() {
+		return RSP_authCode;
+	}
+
+	/**
+	 * @param rSP_authCode
+	 *            the rSP_authCode to set
+	 */
+	public void setRSP_authCode(String rSP_authCode) {
+		RSP_authCode = rSP_authCode;
+	}
+
+	/**
+	 * @return the rSP_uidToken
+	 */
+	public String getRSP_uidToken() {
+		return RSP_uidToken;
+	}
+
+	/**
+	 * @param rSP_uidToken
+	 *            the rSP_uidToken to set
+	 */
+	public void setRSP_uidToken(String rSP_uidToken) {
+		RSP_uidToken = rSP_uidToken;
+	}
+
+	/**
+	 * @return the rSP_partyOrg
+	 */
+	public String getRSP_partyOrg() {
+		return RSP_partyOrg;
+	}
+
+	/**
+	 * @param rSP_partyOrg
+	 *            the rSP_partyOrg to set
+	 */
+	public void setRSP_partyOrg(String rSP_partyOrg) {
+		RSP_partyOrg = rSP_partyOrg;
+	}
+
+	/**
+	 * @return the rSP_partyIdType
+	 */
+	public String getRSP_partyIdType() {
+		return RSP_partyIdType;
+	}
+
+	/**
+	 * @param rSP_partyIdType
+	 *            the rSP_partyIdType to set
+	 */
+	public void setRSP_partyIdType(String rSP_partyIdType) {
+		RSP_partyIdType = rSP_partyIdType;
+	}
+
+	/**
+	 * @return the rSP_partyIdValue
+	 */
+	public String getRSP_partyIdValue() {
+		return RSP_partyIdValue;
+	}
+
+	/**
+	 * @param rSP_partyIdValue
+	 *            the rSP_partyIdValue to set
+	 */
+	public void setRSP_partyIdValue(String rSP_partyIdValue) {
+		RSP_partyIdValue = rSP_partyIdValue;
+	}
+
+	/**
+	 * @return the rSP_actualBalance
+	 */
+	public String getRSP_actualBalance() {
+		return RSP_actualBalance;
+	}
+
+	/**
+	 * @param rSP_actualBalance
+	 *            the rSP_actualBalance to set
+	 */
+	public void setRSP_actualBalance(String rSP_actualBalance) {
+		RSP_actualBalance = rSP_actualBalance;
+	}
+
+	/**
+	 * @return the tranReq
+	 */
+	public byte[] getTranReq() {
+		return tranReq;
+	}
+
+	/**
+	 * @param tranReq
+	 *            the tranReq to set
+	 */
+	public void setTranReq(byte[] tranReq) {
+		this.tranReq = tranReq;
+	}
+
+	/**
+	 * @return the refno
+	 */
+	public String getRefno() {
+		return refno;
+	}
+
+	/**
+	 * @param refno the refno to set
+	 */
+	public void setRefno(String refno) {
+		this.refno = refno;
+	}
+
+}

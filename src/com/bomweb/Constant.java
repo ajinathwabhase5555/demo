@@ -1,0 +1,26 @@
+/**
+ * 
+ */
+package com.bomweb;
+
+/**
+ * @author SACHIN
+ *
+ */
+public class Constant {
+
+	public static final String POSHENTRYMODE = "019";
+	public static final String VENDORCODE = "BOM8800";      // Auth 2.5 "BOM8800"; Normal Txn = "BOM0888"
+	public static final String CURRENCYCODE = "INR";
+	public static final String MERCHANTTYPE = "6012";
+	public static final String POSHCONDITIONCODE = "05";
+	public static final String BANKIIN = "200015";         // Auth 2.5 "200015"  Normal Txn ="607387"
+	public static final String VENDORNAME = "VISIONINDIA";
+	public static final String CITY = "PUNE";
+	public static final String STATE = "MH";
+	public static final String COUNTRY = "IN";
+	public static final String VERSION = "1.8";
+	public static final String AUTHCODE = "STGBOM0001";
+	public static final String AUA = "MGc6YEuZ5s9gjh0ByGhW6HLzAyJcgnMDoL-5HeCP98vwnCqn7kgK54I"; //20/10/2022//MMVm6sMPkNrpZVcaH3ZIbrpK5Vg40N_RLdjyAEJgXZH8DVZ-Dk1vv4M //Valid 20/07/2022 //"MFb_2ldxazEx2PNlTycZWFP7S3GJJygKkAm-9q0vPHYBJay_olFgIdc";  //Valid 24/04/2022     
+
+}

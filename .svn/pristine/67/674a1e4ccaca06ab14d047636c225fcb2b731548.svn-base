@@ -1,0 +1,57 @@
+/**
+ * 
+ */
+package com.bomweb.service.model;
+
+/**
+ * @author SACHIN
+ *
+ */
+public class EKYCOTPIn {
+
+	private byte[] ekycOTPReq;
+	private String processingCode;
+	private String txnDateTime;
+	private String rrn;
+	private String agentID;
+
+	public byte[] getEkycOTPReq() {
+		return ekycOTPReq;
+	}
+
+	public void setEkycOTPReq(byte[] ekycOTPReq) {
+		this.ekycOTPReq = ekycOTPReq;
+	}
+
+	public String getProcessingCode() {
+		return processingCode;
+	}
+
+	public void setProcessingCode(String processingCode) {
+		this.processingCode = processingCode;
+	}
+
+	public String getTxnDateTime() {
+		return txnDateTime;
+	}
+
+	public void setTxnDateTime(String txnDateTime) {
+		this.txnDateTime = txnDateTime;
+	}
+
+	public String getRrn() {
+		return rrn;
+	}
+
+	public void setRrn(String rrn) {
+		this.rrn = rrn;
+	}
+
+	public String getAgentID() {
+		return agentID;
+	}
+
+	public void setAgentID(String agentID) {
+		this.agentID = agentID;
+	}
+}

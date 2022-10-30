@@ -1,0 +1,201 @@
+package com.bomweb;
+
+import java.math.BigInteger;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import com.bomweb.model.TransactionModelRequest;
+import com.bomweb.service.model.TransactionModel_IN;
+import com.bomweb.util.FIUtility;
+import com.bomweb.util.HashGenerator;
+
+public class ISO8583_BOSS {
+
+	// method for building data element ....ISO8583 message
+	public static String createISO(TransactionModelRequest objTransactionModelRequest, TransactionModel_IN in) {
+		try {
+			String[] DE = new String[130];
+			DE[1] = ((objTransactionModelRequest.getPrimaryAccountNumber()).length() < 10
+					? "0" + (objTransactionModelRequest.getPrimaryAccountNumber()).length()
+					: (objTransactionModelRequest.getPrimaryAccountNumber()).length())
+					+ (objTransactionModelRequest.getPrimaryAccountNumber());
+			DE[2] = objTransactionModelRequest.getProcessingCode();
+			DE[3] = FIUtility.addZero(objTransactionModelRequest.getTransactionAmount() + "00", 12);
+			DE[6] = objTransactionModelRequest.getTransactionDateTime();
+			DE[10] = objTransactionModelRequest.getStan();
+			DE[11] = objTransactionModelRequest.getLocalTransactionTime();
+			DE[12] = objTransactionModelRequest.getLocalTransactionDate();
+			if (!objTransactionModelRequest.getProcessingCode().equals("320000"))
+				DE[16] = objTransactionModelRequest.getLocalTransactionDate();
+			DE[17] = objTransactionModelRequest.getMerchantType();
+			DE[21] = objTransactionModelRequest.getPoshEntryMode();
+			DE[24] = objTransactionModelRequest.getPoshConditionCode();
+			DE[31] = ((objTransactionModelRequest.getAiic()).length() < 10
+					? "0" + (objTransactionModelRequest.getAiic()).length()
+					: (objTransactionModelRequest.getAiic()).length()) + (objTransactionModelRequest.getAiic());
+			DE[36] = objTransactionModelRequest.getRrn();
+
+			DE[40] = objTransactionModelRequest.getTerminalId();
+			DE[41] = objTransactionModelRequest.getVendorCode();
+			DE[42] = objTransactionModelRequest.getBcDetails();
+			DE[45] = FIUtility.addThreeZeroes(objTransactionModelRequest.getAgentDetails())
+					+ objTransactionModelRequest.getAgentDetails();
+			DE[48] = objTransactionModelRequest.getCurrencyCode();
+			DE[55] = in.getDe56();
+			DE[56] = in.getDe57();
+			String de61 = null;
+
+			if (in.getTransactionType().equals("VID")) {
+				de61 = "001003VID002002010030020600400203";
+				DE[60] = FIUtility.addThreeZeroes(de61) + de61;
+				if (in.getTransactionMode().equalsIgnoreCase("OFFUS")
+						&& objTransactionModelRequest.getProcessingCode().equals("320000"))
+					DE[119] = "009002003VID";
+			} else if (in.getTransactionType().equals("AADHAAR")) {
+				de61 = "001003UID002002010030020600400203";
+				DE[60] = FIUtility.addThreeZeroes(de61) + de61;
+				if (in.getTransactionMode().equalsIgnoreCase("OFFUS")
+						&& objTransactionModelRequest.getProcessingCode().equals("320000"))
+					DE[119] = "009002003UID";
+			}
+
+			DE[72] = date();
+
+			DE[99] = ("1.8".length() < 10 ? "0" + "1.8".length() : "1.8".length()) + "1.8";
+
+			if (in.getTransactionType().equals("ACCOUNT")
+					&& objTransactionModelRequest.getProcessingCode().equals("310000")) {
+				de61 = "001003UID002002010030020600400203";
+				DE[60] = FIUtility.addThreeZeroes(de61) + de61;
+				DE[101] = "11" + in.getAccountNo();
+			} else if (in.getTransactionType().equals("ACCOUNT")
+					&& objTransactionModelRequest.getProcessingCode().equals("010000")) {
+				de61 = "001003UID002002010030020600400203";
+				DE[60] = FIUtility.addThreeZeroes(de61) + de61;
+				DE[101] = "11" + in.getAccountNo();
+			} else if (in.getTransactionType().equals("ACCOUNT")
+					&& objTransactionModelRequest.getProcessingCode().equals("210000")) {
+				de61 = "001003UID002002010030020600400203";
+				DE[60] = FIUtility.addThreeZeroes(de61) + de61;
+				DE[102] = "11" + in.getAccountNo();
+			}
+
+			String bioData = in.getBiometric();
+			if (bioData.length() > 992) {
+				DE[110] = "999FPD" + bioData.length() + bioData.substring(0, 992);
+				String bio2 = bioData.substring(992);
+				DE[111] = FIUtility.addThreeZeroes(bio2) + bio2;
+			} else {
+				String bio = bioData.length() + bioData;
+				DE[110] = FIUtility.addThreeZeroes(bio) + "FPD0" + bio;
+			}
+
+			String uid = objTransactionModelRequest.getPrimaryAccountNumber()
+					.substring(objTransactionModelRequest.getPrimaryAccountNumber().length() - 12);
+
+			if (in.getProcessingCode().equals("310000") || in.getProcessingCode().equals("120000")
+					|| in.getProcessingCode().equals("940000"))
+				uid = uid + "~" + DE[36];
+			else if (in.getProcessingCode().equals("010000") || in.getProcessingCode().equals("210000") || in.getProcessingCode().equals("320000"))
+				uid = uid + "~" + DE[3] + "~" + DE[36];
+			else if (in.getProcessingCode().equals("400000")) {
+				String uid2 = in.getDe120().substring(in.getDe120().length() - 12);
+				uid = uid2 + "~" + uid + "~" + DE[3] + "~" + DE[36];
+			}
+			System.out.println("************ HMAC UID : " + uid);
+			String de123 = HashGenerator.hashing(uid, DE[6]);
+			DE[122] = FIUtility.addThreeZeroes(de123) + de123;
+
+			String de126 = in.getDe126();
+			DE[125] = FIUtility.addThreeZeroes(de126) + de126;
+			if (in.getProcessingCode().equals("400000")) {
+				DE[119] = in.getDe120();
+			}
+
+			String secretKey = ("001" + in.getSkey().length() + in.getSkey());
+			String ci = "002" + FIUtility.addThreeZeroes(in.getCi()) + in.getCi();
+			String hmac = "0030" + in.getHmac().length() + in.getHmac();
+			String authCode = "STGBOM0001";
+			String ac = "0040" + authCode.length() + authCode;
+			String sa = "0050" + authCode.length() + authCode;
+			String licenseKey = Constant.AUA;
+
+			String lk = "0060" + licenseKey.length() + licenseKey;
+			String rc = "007001Y";
+
+			String de127 = secretKey + ci + hmac + ac + sa + lk + rc;
+			DE[126] = FIUtility.addThreeZeroes(de127) + de127;
+
+			// for (int i = 0; i < DE.length; i++)
+			// if (DE[i] != null)
+			// System.out.println("[" + (i + 1) + "] ---> " + DE[i]);
+
+			String isoMessage = Build(DE);
+			return isoMessage;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return null;
+	}
+
+	private static String date() {
+		Date date = new Date();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyMMdd");
+		String strDate = formatter.format(date);
+		return strDate;
+	}
+
+	private static String Build(String[] DE) {
+		String newISO = "";
+		String newDE1 = "";
+		for (int I = 1; I <= 63; I++) {
+			if (DE[I] != null && !DE[I].trim().equals("")) {
+				newDE1 += "1";
+			} else {
+				newDE1 += "0";
+			}
+		}
+		newDE1 = "1" + newDE1;
+		// for (int i = 0; i < newDE1.length(); i++) {
+		// if (newDE1.charAt(i) == '1')
+		// System.out.println("[ " + (i) + "] ---> " + newDE1.charAt(i));
+		// }
+		String newDE2 = "";
+
+		for (int i = 64; i <= 127; i++) {
+			if (DE[i] != null) {
+				newDE2 = newDE2 + "1";
+			} else {
+				newDE2 = newDE2 + "0";
+			}
+		}
+		newDE2 = "0" + newDE2;
+		// for (int i = 0; i < newDE2.length(); i++) {
+		// if (newDE2.charAt(i) == '1')
+		// //System.out.println("[ " + (i + 64) + "] ---> " + newDE2.charAt(i));
+		// }
+		for (String str : DE) {
+			if (str != null) {
+				newISO = newISO + str;
+			}
+		}
+
+		String hexconString = getHexValue(newDE1).toUpperCase();
+		String hexconString2 = getHexValue(newDE2).toUpperCase();
+		newISO = hexconString + hexconString2 + newISO;
+		newISO = Integer.toString(("1200" + newISO).length()) + "1200" + newISO;
+		return newISO;
+	}
+
+	public static String getHexValue(String cellValue) {
+		BigInteger b = new BigInteger(cellValue, 2);
+		String str = b.toString(16);
+		while (str.length() < 16) {
+			str = "0" + str;
+		}
+		return str;
+
+	}
+
+}

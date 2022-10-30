@@ -1,0 +1,155 @@
+/**
+ * 
+ */
+package com.bomweb.dualauth;
+
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.sql.Blob;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.sql.rowset.serial.SerialBlob;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
+import org.hibernate.Session;
+
+import com.bomweb.insurance.SocialScheme;
+import com.bomweb.model.DualAuthCifEnq;
+import com.bomweb.model.InsuranceCifEnq;
+import com.bomweb.service.model.DualAuthIn;
+import com.bomweb.service.model.DualAuthOut;
+import com.bomweb.util.HibernateUtil;
+
+/**
+ * @author SACHIN
+ *
+ */
+public class DualAuth {
+
+	static Log log = LogFactory.getLog(DualAuth.class);
+
+	/**
+	 * @param in
+	 * @param out
+	 * @return
+	 */
+	public static DualAuthOut authCIFRequest(DualAuthIn in, DualAuthOut out) {
+		DualAuthCifEnq cifEnq = saveCIFEnquiryReq(in);
+		byte[] response = initiateDualAuth(cifEnq.getDualReq());
+		cifEnq = saveCIFResponse(response,cifEnq);
+		return null;
+	}
+
+	/**
+	 * @param response
+	 * @param cifEnq
+	 * @return
+	 */
+	private static DualAuthCifEnq saveCIFResponse(byte[] response, DualAuthCifEnq cifEnq) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/**
+	 * @param in
+	 * @return
+	 */
+	private static DualAuthCifEnq saveCIFEnquiryReq(DualAuthIn in) {
+
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		DualAuthCifEnq cifEnq = new DualAuthCifEnq();
+		try {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+			String date = dateFormat.format(new Date());
+			cifEnq.setCurrentDate(dateFormat.parse(date));
+			Blob iso = new SerialBlob(in.getReqByte());
+			cifEnq.setRequestMsg(iso);
+			cifEnq.setAccountNo(in.getAccountNo());
+			cifEnq.setRrn(in.getRrn());
+			cifEnq.setProcessingCode(in.getProcessingCode());
+			cifEnq.setTransactionDateTime(in.getTransactionDateTime());
+			cifEnq.setTerminalID(in.getTerminalID());
+			cifEnq.setAgentID(in.getAgentID());
+			cifEnq.setDualReq(in.getReqByte());
+			session.beginTransaction();
+			session.saveOrUpdate(cifEnq);
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			log.error(e);
+			e.printStackTrace();
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
+		}
+		return cifEnq;
+	}
+	
+	/**
+	 * @param in
+	 * @param out
+	 * @return
+	 */
+	public static DualAuthOut authRequest(DualAuthIn in, DualAuthOut out) {
+		DualAuthCifEnq cifEnq = saveCIFEnquiryReq(in);
+		byte[] response = initiateDualAuth(cifEnq.getDualReq());
+		cifEnq = saveCIFResponse(response,cifEnq);
+		return null;
+	}
+	
+	
+	/**
+	 * @param dualReq
+	 * @return
+	 */
+	private static byte[] initiateDualAuth(byte[] dualReq) {
+
+		log.info("*********Dual Auth Req ********" + new String(dualReq));
+		String response = null;
+		try {
+
+			SSLContextBuilder builder = new SSLContextBuilder();
+			builder.loadTrustMaterial(null, new TrustStrategy() {
+				@Override
+				public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+					return true;
+				}
+			});
+
+			SSLConnectionSocketFactory sslSF = new SSLConnectionSocketFactory(builder.build(),
+					SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
+			HttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslSF).build();
+
+			HttpEntity entity = MultipartEntityBuilder.create()
+					.addBinaryBody("req.txt", dualReq, ContentType.MULTIPART_FORM_DATA, "req.txt").build();
+			HttpPost httpPost = new HttpPost("http://125.18.108.188:7003/Servlet/TSPGenericServiceProcessor");
+			httpPost.setEntity(entity);
+			HttpResponse httpResponse = httpClient.execute(httpPost);
+
+			HttpEntity httpEntity = httpResponse.getEntity();
+			int statusCode = httpResponse.getStatusLine().getStatusCode();
+			System.out.println("HTTP Response Code : " + statusCode);
+			response = EntityUtils.toString(httpEntity, "UTF-8");
+			System.out.println("\nInsurance Response :" + response);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response.getBytes();
+	}
+
+
+}

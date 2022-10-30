@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<authRequest>
+    <auth ac="STGBOM0001" lk="MDchZm__8fXfYW15HWFqkrZz2_jBTAXEGVeRs2Kg4581gpubTE8EpK4" rc="Y" sa="STGBOM0001" tid="registered" txn="000501" uid="955522033390" ver="2.5">
+        <data type="X">MjAxOS0xMi0yM1QxNTo0ODoxNuGrfnbKrYeLk2S8YLVYYJw4EQ4lSHiA642YmXNcZeTd+X8PnQymVFydNmuC1jeGQ1cAvFn+8/hISQivsuft7vQGz859g7bbksNa3zVYAVN/QWP/24wc8geFgGtn3nUrSXDFO0EvVO4ttxOB/ItDhh5UWddSl8M7DIOSIfOmA56m7CR7DUrKO72TVQgHLAA3jmhd21LrhQXT2AbGlU73e3hZUZxHSyjg3e/dWpUK7fGVIjMdCcByy6f2TFXLvmCx/lWdRQzrRF1ejqGJv9FYaKiOba1u7oHAVFPWNKKbyqSSSXXj1f6RibY1nwk5HRq7wMVQyNbOSiffrVvHSjH6Rj8L6u6y9gMN4eB4vxJLBxwHTngjFeFNWHPBnBkzbquuuA5xFHRgCGBl35psUL74QFcroPhWOmGTCxVT61YgmVYImkUC/4WhEApK0piZVUMsDMEx06iifhIkap4ivdIYdegMAUe6FNiw+k4XdOg6efldcSudc7G+Qu+HfXPs8d3324qnVFHmyZyGZydZyfwN9W26oAMkSe5ROFaJv0PPP679QgcPv9QCDTmbSdTEX80Cyx0x0WFsQTPP3RaPZIRimc0/Jnny/zhDGRlWo/YDZyqIhTJMHibitV0GIfZbzfp+PIRcBtBlyvFWf+pSSBFV0K4mA4JZfo3oxjf3fzADjFv5mI7HwdUgsVtaN2llgy+4LimD3w4n8/61DRFYIv8sIMegl/gIVAUQsJW2bxa6fy7FqoyUClFgZhCKd2QJOPlE/n7hMQXN8LmFKchMfIzWPEbm3DM8VAPnILOwEQ19h/o8j4OX7LXiafLjywiMDk+ldjph/UFKlkSJRvpf4yaYz1gre8nHwv9LVEhhIZRjd4UCvZNlijdzUOysZnaqIyRsb2Fx/nRDwoDUOGn5w/PCdiK8DnnAxM1UNvT/tuXRajSGXf9Du36KUe7mwRrcHSuPbT1yEfzZTeR4nXyTTeLX0ye380DQw5l/CubHHb5/IhaWNnFx/nR+bfnsXxbeYoMqTyFFFCiDChCSCebCZWCdUcW97Jm/6Xx28wBvk3MEnIn9sAd2mODyAGvIAKpDvmtItPCi6DR83Br4DX0BrCBDBGqfsYQbvEP10ektz/DIIaNX7AevmN+It8Dfhnk3sDdceS0+fCdwemyQINWrEKziqylR9iCju/90XroLJi5u/AorL3bvqujaCiLGDhR0kekpV7J5uQhHkNx5XwMl+Y7oFRxH74X+fpFOm4HZJz70E0/4ElsVKhl/RyjEWNIZHxEudR0=</data>
+        <hmac>11QX3dQQ70lVMJfksgvbqduDX7qX46kkqz+JPKU0wrN7PHf1VqjwJq63VeIrASGa</hmac>
+        <meta dc="9eb5dd7d-0881-41be-888a-533eb0bfa649" dpId="Morpho.SmartChip" mc="MIID/zCCAuegAwIBAgIGAW8obvaTMA0GCSqGSIb3DQEBCwUAMIGcMSAwHgYDVQQDDBdEUyBTTUFSVCBDSElQIFBWVCBMVEQgODEYMBYGA1UEMxMPRCAyMTYgU0VDVE9SIDYzMQ4wDAYDVQQJDAVOb2lkYTEWMBQGA1UECAwNVVRUQVIgUFJBREVTSDEMMAoGA1UECwwDRFNBMRswGQYDVQQKDBJTTUFSVCBDSElQIFBWVCBMVEQxCzAJBgNVBAYTAklOMB4XDTE5MTIyMTEyMjkxOFoXDTIwMDEyMDEyMjkxOFowgcUxFDASBgNVBAoMC01BUlBIT1JEUE9DMQwwCgYDVQQLDANEU0ExMTAvBgkqhkiG9w0BCQEWInBhbmthai5hZ2Fyd2FsQHNtYXJ0Y2hpcG9ubGluZS5jb20xDjAMBgNVBAcMBU5vaWRhMRYwFAYDVQQIDA1VdHRhciBQcmFkZXNoMQswCQYDVQQGEwJpbjE3MDUGA1UEAwwucmRfZGV2aWNlXzllYjVkZDdkLTA4ODEtNDFiZS04ODhhLTUzM2ViMGJmYTY0OTCCASEwDQYJKoZIhvcNAQEBBQADggEOADCCAQkCggEAveUnyXUFm5HDkwqfazQAH24oGUB0UMIc4rRf6lBqhLtS1uxdI6+ouP4Ww1NNl9h46oesYa+gOpHpmsGk6gQDMIfBphyH0KWplWpxD0LUe9kWFt9UxpYSyzDzl7+TYtiZLvNj0PLXqdG17R1RW+5bOyeTlI4KM+pvR+Zna18BYm+/P7IYx6Kt2mHDgEbDSVAle2a1Ggm0GDtv0e6tsjzjifTHmbr/ZOf3uVZXx4BZc8lBfRPk+oyoO34rUCwAIZCd5efEckCUU1asaonc6rKRCTXVhLD/xDuqjDflxWVB6ARziD+IQFTlJ2YlWqbM9qH5P3LniiNHC5et84D2dnfhcwIDAQABox0wGzAMBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBhjANBgkqhkiG9w0BAQsFAAOCAQEAQRft38H0OH5Ni7aOFi0AfKvt/QZD1CZbhxIsJBXlx8IFyHmWGVJNCMQZpMVsW7bpDihvetprWeTzPJ9sgn7RZPTyNV3SGJys2z4YSsh1zwrjiyR2SyfauB5u/onlnGFbZe8Ta0W4Y1y7JX8aGUHtk5TkcN4Ghr1CybRK80PW8GdhHGlilE7eSGa0JBHQEPp2zBOuS1g+VUk88TLKuecDhb5lyMV3TxCUVfiIcDFXdQv0hQ/T2oIMiulF1/jRYcfwQiiWTX0rv90KXNxbA7drymB64btYx4KCYargjipZjbs8Qu7pzCSzrkAbuAbcwPm1o+plPFGwVEdeONEYeKCdIw==" mi="MSO1300E2L0SW" rdsId="SCPL.WIN.001" rdsVer="1.0.2"/>
+        <skey ci="20201030">zxOEi7e50goQmnbD886x6zHlJPPCFS5EXHytluAtiD+sBtmg0BMWctAGWzItdPBW5Hoedv6SDnjuaKTXwPVgtgujsCzQT+dY74j1QmtcSdKNZD6VW63hqeqWGmH6bXqTzyr5Q8c9wo4kO4Bd9XxrRNNhRkARepjgligQMqLDGHaNog1tcr9wC3cAx8jYKFCC2DACmIewl3ikdwMav28fHZhZ9wxWBcbks6KNYvCi45uUapl4AQSPgv/nKdrooW6kzHtYlPMZmzLbzTtJgimStzgNRDgKbwewcK5Cd1PH5Ntt7DChCMlpDVmioL9uj9i8oS5bXXVgGhoW787j0JBTlg==</skey>
+        <uses bio="y" bt="FMR" otp="n" pa="n" pfa="n" pi="n" pin="n"/>
+    </auth>
+    <transactionInfo>
+        <acqId>200015</acqId>
+        <actionDate>122319</actionDate>
+        <agentInfo>18880001| | |019</agentInfo>
+        <hmac>cd80198b682dbbd153201acce29384e808ca5a9b482be327cf473c5f1f5bb4f2</hmac>
+        <local_Trans_Time>154946</local_Trans_Time>
+        <local_date>1223</local_date>
+        <mcc>6012</mcc>
+        <pan>6073870955522033390</pan>
+        <pos_code>05</pos_code>
+        <pos_entry_mode>019</pos_entry_mode>
+        <proc_Code>340000</proc_Code>
+        <stan>499758</stan>
+        <transm_Date_time>1223154946</transm_Date_time>
+        <vendorCode>88</vendorCode>
+        <ver>2.5</ver>
+        <cA_ID>BOM088800002888</cA_ID>
+        <cA_TA>000002888</cA_TA>
+        <rRN>935715499758</rRN>
+    </transactionInfo>
+</authRequest>

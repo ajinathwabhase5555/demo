@@ -1,0 +1,129 @@
+/**
+ * 
+ */
+package com.bomweb.transaction;
+
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
+
+import com.bomweb.Transaction;
+import com.bomweb.model.ONUSTransactionXML;
+import com.bomweb.service.model.Transaction_IN;
+import com.bomweb.service.model.Transaction_OUT;
+import com.bomweb.transaction.xml.ISO8583XML;
+
+/**
+ * @author SACHIN
+ *
+ */
+public class ONUSTransaction {
+
+	static Log log = LogFactory.getLog(ONUSTransaction.class);
+	
+	public static Transaction_OUT onusTransaction(Transaction_IN in) {
+		Transaction_OUT out = new Transaction_OUT();
+		byte[] trnReq = ISO8583XML.createXML(in);
+		
+//		ONUSTransactionXML tranReq = saveOnusRequest(trnReq,in);
+//		String response = postTransaction(onus.getIsoReq());
+//		if (response != null && response.length() > 0) {
+//			String[] bankResponse = messageParser.parseAEPSMsg(response.getBytes(), "transaction");
+//			onus = saveOnusResponse(bankResponse, onus);
+//			out.setResponseCode(
+//					onus.getRspResponseCode() + " : " + ResponseCodes.getresponsedesc(onus.getRspResponseCode()));
+//		} else {
+			out.setResponseCode("91 : No response from Gateway..!!");
+//		}
+		return out;
+	}
+	
+private static ONUSTransactionXML saveOnusRequest(byte[] trnReq, Transaction_IN in) {
+		
+		return null;
+	}
+	
+	public static byte[] postTransaction(byte[] dataSrc) throws Exception {
+		byte[] isoresponse = null;
+		try {
+			SSLContextBuilder builder = new SSLContextBuilder();
+			builder.loadTrustMaterial(null, new TrustStrategy() {
+				@Override
+				public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+					return true;
+				}
+			});
+
+			SSLConnectionSocketFactory sslSF = new SSLConnectionSocketFactory(builder.build(),
+					SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
+			HttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslSF).build();
+
+			HttpEntity entity = MultipartEntityBuilder.create()
+					.addBinaryBody("req.txt", dataSrc, ContentType.MULTIPART_FORM_DATA, "req.txt").build();
+			HttpPost httpPost = new HttpPost("http://125.18.108.188:7003/Servlet/IBSOtherVendorRequestServlet");
+			httpPost.setEntity(entity);
+			HttpResponse httpResponse = httpClient.execute(httpPost);
+
+			final RequestConfig params = RequestConfig.custom().setConnectTimeout(91000).setSocketTimeout(91000)
+					.build();
+			httpPost.setConfig(params);
+			HttpEntity responseEntity = httpResponse.getEntity();
+			int statusCode = httpResponse.getStatusLine().getStatusCode();
+			System.out.println("Status Code : " + statusCode);
+			if (statusCode == HttpStatus.SC_OK) {
+				String response = EntityUtils.toString(responseEntity, "UTF-8");
+				System.out.println("Response from Bank : " + response);
+
+				String data = null;
+				try {
+					if (response != null && (!response.trim().equals(""))) {
+						data = new String(response);
+						try {
+							if (response.length() < 4) {
+								log.info("No Response from Bank Server");
+								return isoresponse;
+							}
+							data = data.substring(4);
+						} catch (Exception exception) {
+							log.info("Exception in bank Response " + exception);
+						}
+
+						try {
+							isoresponse = response.trim().getBytes();
+						} catch (Exception e) {
+							log.info("Response Error :::: " + e);
+							e.printStackTrace();
+						}
+					} else {
+						log.info("No Response From Bank");
+						return isoresponse;
+					}
+				} catch (Exception es) {
+					log.info("Error in side response parsing " + es);
+				} finally {
+					responseEntity.getContent().close();
+				}
+				log.info("-------- End -------------");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return isoresponse;
+	}
+}

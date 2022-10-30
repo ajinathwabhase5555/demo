@@ -1,0 +1,183 @@
+/**
+ * 
+ */
+package com.bomweb.aadhaarstatus;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
+
+import com.bomweb.util.FIUtility;
+import com.bomweb.util.HashGenerator;
+
+/**
+ * @author SACHIN
+ *
+ */
+public class TestExl {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		
+		
+		String hmac1 = HashGenerator.hashing("116014884197~60458824849~01", "20210609020209");
+		System.out.println(hmac1);
+
+		AuthRequest authRequest = new AuthRequest();
+		TransactionInfo tran = new TransactionInfo();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("MMddHHmmss");
+		String dateTime = dateFormat.format(new Date());
+
+		tran.setAcqId("200015");
+		tran.setActionDate(dateTime.substring(0, 4) + "19");
+		tran.setAgentInfo("18880001| | |019");
+		tran.setcA_TID("000002888");
+		tran.setcA_ID("BOM088800002888");
+		tran.setcA_TA("VISIONINDIA            PUNE         MHIN");
+		tran.setLocal_date(dateTime.substring(0, 4));
+		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		tran.setLocal_Trans_Time(dateTime.substring(4));
+		tran.setMcc("6012");
+		tran.setPan("6073870955522033390");
+		tran.setPos_code("05");
+		tran.setPos_entry_mode("019");
+		tran.setProc_Code("340000");
+		tran.setStan("88" + FIUtility.get4Digits());
+		tran.setrRN(createRRN(tran.getStan()));
+		String hmac = HashGenerator.hashing("955522033390~" + tran.getrRN(), dateTime);
+		tran.setHmac(hmac);
+		tran.setTransm_Date_time(dateTime);
+		tran.setVendorCode("88");
+		tran.setVer("2.5");
+		authRequest.setTransactionInfo(tran);
+
+		Auth auth = new Auth();
+		auth.setAc("STGBOM0001");
+		auth.setHmac("784DympDyNp1Dwxd2CsuBeto4gLPrv+LUe9MOsLz0ZOb5xJD3FzNpN0cVq685Fh0");
+		auth.setLk("MM1MYbM-7t9Jw11XXKUCeSVBPPchILyPqI28xTEZQEmoM3CT1xB8xvU");
+
+		auth.setRc("Y");
+		auth.setSa("STGBOM0001");
+		auth.setTid("registered");
+		auth.setTxn("000501");
+		auth.setUid("955522033390");
+		auth.setVer("2.5");
+
+		Uses uses = new Uses();
+		uses.setBio("Y");
+		uses.setBt("FMR");
+		uses.setOtp("N");
+		uses.setPa("N");
+		uses.setPi("N");
+		uses.setPfa("N");
+		uses.setPin("N");
+
+		Meta meta = new Meta();
+		meta.setDc("9eb5dd7d-0881-41be-888a-533eb0bfa649");
+		meta.setDpId("Morpho.SmartChip");
+		meta.setMc(
+				"MIID/zCCAuegAwIBAgIGAW8obvaTMA0GCSqGSIb3DQEBCwUAMIGcMSAwHgYDVQQDDBdEUyBTTUFSVCBDSElQIFBWVCBMVEQgODEYMBYGA1UEMxMPRCAyMTYgU0VDVE9SIDYzMQ4wDAYDVQQJDAVOb2lkYTEWMBQGA1UECAwNVVRUQVIgUFJBREVTSDEMMAoGA1UECwwDRFNBMRswGQYDVQQKDBJTTUFSVCBDSElQIFBWVCBMVEQxCzAJBgNVBAYTAklOMB4XDTE5MTIyMTEyMjkxOFoXDTIwMDEyMDEyMjkxOFowgcUxFDASBgNVBAoMC01BUlBIT1JEUE9DMQwwCgYDVQQLDANEU0ExMTAvBgkqhkiG9w0BCQEWInBhbmthai5hZ2Fyd2FsQHNtYXJ0Y2hpcG9ubGluZS5jb20xDjAMBgNVBAcMBU5vaWRhMRYwFAYDVQQIDA1VdHRhciBQcmFkZXNoMQswCQYDVQQGEwJpbjE3MDUGA1UEAwwucmRfZGV2aWNlXzllYjVkZDdkLTA4ODEtNDFiZS04ODhhLTUzM2ViMGJmYTY0OTCCASEwDQYJKoZIhvcNAQEBBQADggEOADCCAQkCggEAveUnyXUFm5HDkwqfazQAH24oGUB0UMIc4rRf6lBqhLtS1uxdI6+ouP4Ww1NNl9h46oesYa+gOpHpmsGk6gQDMIfBphyH0KWplWpxD0LUe9kWFt9UxpYSyzDzl7+TYtiZLvNj0PLXqdG17R1RW+5bOyeTlI4KM+pvR+Zna18BYm+/P7IYx6Kt2mHDgEbDSVAle2a1Ggm0GDtv0e6tsjzjifTHmbr/ZOf3uVZXx4BZc8lBfRPk+oyoO34rUCwAIZCd5efEckCUU1asaonc6rKRCTXVhLD/xDuqjDflxWVB6ARziD+IQFTlJ2YlWqbM9qH5P3LniiNHC5et84D2dnfhcwIDAQABox0wGzAMBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBhjANBgkqhkiG9w0BAQsFAAOCAQEAQRft38H0OH5Ni7aOFi0AfKvt/QZD1CZbhxIsJBXlx8IFyHmWGVJNCMQZpMVsW7bpDihvetprWeTzPJ9sgn7RZPTyNV3SGJys2z4YSsh1zwrjiyR2SyfauB5u/onlnGFbZe8Ta0W4Y1y7JX8aGUHtk5TkcN4Ghr1CybRK80PW8GdhHGlilE7eSGa0JBHQEPp2zBOuS1g+VUk88TLKuecDhb5lyMV3TxCUVfiIcDFXdQv0hQ/T2oIMiulF1/jRYcfwQiiWTX0rv90KXNxbA7drymB64btYx4KCYargjipZjbs8Qu7pzCSzrkAbuAbcwPm1o+plPFGwVEdeONEYeKCdIw==");
+		meta.setMi("MSO1300E2L0SW");
+		meta.setRdsId("SCPL.WIN.001");
+		meta.setRdsVer("1.0.0");
+
+		Skey skey = new Skey();
+		skey.setCi("20201030");
+		skey.setValue(
+				"IWCdsAGIY+ugUAfBQf0fKczuBq3vUb69Z/4xgAPl0qgdV4v6yzYRILnSTGSupvG1TiKNDmmchy/1NY8hz45dRlOzCBUH9jcgI9VPglfNouoiL4bgNhJWJNxNVzOmbeONec9479yc2i0G2ZTBeBgUwsi+psHagpCNEP6jIoV3rUjecw6JNCntnJTMjv4fC2uhs/QKpB/OAzwOhfs6nyNS69Huit+7Z7tgh/ljPbWZvP/9RjoOTKzwhvIKFrQp1FWiIZiX0YWOPjg0n0CQIeNHQd8XJ/BH5ZKUdTpXQCCV3++sT/FqtHkVhDGqlmH4B4xDxQ87o8tRmX253hh088yDZw==");
+
+		Data data = new Data();
+		data.setType("X");
+		data.setValue(
+				"MjAxOS0xMi0yNlQxNzoxOTowOUIApk32fieaG55AlwwUH3cAK7zCRh1X8Z+AykQub2+wQ3edmt3fenSNPwZJryj76F0cSIW8fK+7SDJEnkMIORQxTpbEl+Vjj/j6snEY34PdsLsCK0bwRUl6crqlJqxxxGv/fNyqb8WaSyov9RuVfhNpz2fOhC+uvM4A7ismhi9EZVxJrhiKBk1st9idUGdJbF5+YmEdDfDlrkuhbc+v016XJH3V4GTibwMtT5BMjPgOovazviQw5W0wKrP5Hrnc0vtLt3BK78TBZ1XqVe82GRqgWygi6wBeJjcWz0pHYXgu5qO6ptxb6ypV51CTI2DwBXT5zVy3Bjxr8hCA5k20sONS0e/1gYyaHC9QXzP7I2lirz56pwReIahzh7BJVJURfXm7Cib6bPF1UzjvfKJkjgEbqLx7LokLrG2wY2gqdq8YHvIjtJoqK6xy2eCiHWF/ha3/bPNKlR6F2gzift02R3id/6AhopLXZBjgDiWaSGYRdJCVHwj4a9RZCeSgh2lFYRIndnhTLjPOECR6Wo3tLaTadja+xNAhKzmD60FFppzNRQYemW1bYpLNitcwJ48fbjcIZZ6uo16bmLLk9lcdCOwnqb9zG+9Yp1kjQsiA/YCrCLhXUO65g3ui3x+Jk73VUvvGw3SZYZv6nQQCLJjP6eKDOd+zM7cZ2+PsDE6nNO2vLKK6LWh1rOGmabWZQM6lZYI7ly7OO7G2a+LooFlK8q8bpljqgv7E9FH08fkG4iRwb2I02rwZkezjUSprvll5YjNCjP9+TEHorgTxybTnslEszuFXpWWiqQHLCz2t7SYvNE1/CJG//QjMnyTgYVtIdUSvdPFBsGP1O8BjbjtwWgDkHw8Z2JeEmKJBQCb2IkrpQHB9zDj6cVp8WYsLFA9/hwyYjFMuzzomlR8EXq/N03OLC6RpHXVy1Va/Pd2MvqQzaVtrvl8AtPZV8UQ+DPFJzTia7XJLoruwRLY6yvfrWs1fFVHnZHQ0SES+pNVgdfhnry43lsSZDUKIHaPOdZDg+YAaMARpf9KWB2hRA1qMCbuTb1NfmNcQnBxzJm2y/r1SmmkWZo3Z3FV32r9SwVBPPHJ6ohc83xyUyGX4u7C7t5mQfvlHpBhIgTxPseSoJLtE3FbZpJ7oxERZqT2BmngdJIbTvsqm8aeoWwh4KvDgE3zP1MOcIGB/INX83ZSmgUnQADEqGt+iIAi3Td6xlVP/gPnIExcXN2KvM27/6a8F2IIZpsuXuPBBD3E95pRQp+FSvkMSyRAQ9XNiH/1dcgkawFOAVH1JKLUMjgd6tjDo4oK9LotfeaAD8VFpAOOYo9Fl0F3ERnb4x+DPawxNCYjgqbmgBuzX1LNdSO3T/KL8n3RSgZV1Mr+vHgH9Cew9isfHww==");
+		auth.setUses(uses);
+		auth.setMeta(meta);
+		auth.setSkey(skey);
+		auth.setData(data);
+		authRequest.setAuth(auth);
+
+		try {
+			JAXBContext jaxbContext = JAXBContext.newInstance(AuthRequest.class);
+			Marshaller marshaller = jaxbContext.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			File file = new File("E:\\product.xml");
+			marshaller.marshal(authRequest, file);
+			marshaller.marshal(authRequest, System.out);
+			initiateRequest(Files.readAllBytes(file.toPath()));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static byte[] initiateRequest(byte[] billByte) {
+
+		byte[] response = null;
+		try {
+			SSLContextBuilder builder = new SSLContextBuilder();
+			builder.loadTrustMaterial(null, new TrustStrategy() {
+				@Override
+				public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+					return true;
+				}
+			});
+
+			SSLConnectionSocketFactory sslSF = new SSLConnectionSocketFactory(builder.build(),
+					NoopHostnameVerifier.INSTANCE);
+			HttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslSF).build();
+
+			HttpEntity entity = MultipartEntityBuilder.create()
+					.addBinaryBody("req.txt", billByte, ContentType.MULTIPART_FORM_DATA, "req.txt").build();
+			HttpPost httpPost = new HttpPost("http://125.18.108.188:7003/servlet/AadharLinkingStatus");
+			httpPost.setEntity(entity);
+			HttpResponse httpResponse = httpClient.execute(httpPost);
+
+			HttpEntity responseEntity = httpResponse.getEntity();
+			int statusCode = httpResponse.getStatusLine().getStatusCode();
+			System.out.println("Status Code : " + statusCode);
+			if (statusCode == HttpStatus.SC_OK) {
+				String rsp = EntityUtils.toString(responseEntity, "UTF-8");
+				System.out.println("*********Response from Bank : *********" + rsp);
+				response = rsp.getBytes();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	public static String createRRN(String stan) {
+		StringBuilder rrn = new StringBuilder();
+		Date now = new Date();
+		String date = now.toString();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("DDD");
+		rrn.append(date.substring(date.length() - 1, date.length()));
+		rrn.append(dateFormat.format(now));
+		rrn.append(now.getHours());
+		rrn.append(stan);
+		return rrn.toString();
+	}
+}

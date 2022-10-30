@@ -1,0 +1,311 @@
+/**
+ * 
+ */
+package com.bomweb.aadhaarstatus;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.sql.Blob;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
+import javax.sql.rowset.serial.SerialBlob;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.util.EntityUtils;
+import org.hibernate.Session;
+
+import com.bomweb.model.AadhaarLinkStatus;
+import com.bomweb.service.model.AADHAARSTATUSIN;
+import com.bomweb.service.model.AADHAARSTATUSOUT;
+import com.bomweb.util.FIUtility;
+import com.bomweb.util.HashGenerator;
+import com.bomweb.util.HibernateUtil;
+
+/**
+ * @author SACHIN
+ *
+ */
+public class AadhaarStatus {
+
+	static Log log = LogFactory.getLog(AadhaarStatus.class);
+
+	/**
+	 * @param in
+	 * @param out
+	 * @return
+	 */
+	public static AADHAARSTATUSOUT aadhaarLinkStatus(AADHAARSTATUSIN in, AADHAARSTATUSOUT out) {
+		byte[] req = createXML(in);
+		AadhaarLinkStatus status = saveAadhaarLinkStatusReq(in, req);
+		byte[] response = initiateRequest(req);
+		try {
+			if (response.length != 0) {
+				status = saveAadhaarLinkStatusRsp(status, response);
+				out.setResponseCode(status.getResponseCode());
+				out.setResponseDesc(status.getResponseDesc());
+				out.setRspRrn(status.getRspRrn());
+				out.setBankIIN(status.getBankiin());
+				out.setBankName(status.getBankName());
+				out.setMappingStatus(status.getMappingStatus());
+				System.out.println("********* Response Code :" + status.getResponseCode());
+			} else {
+				out.setResponseCode("91");
+				out.setResponseDesc("No response from FI-Gateway..");
+			}
+		} catch (Exception e) {
+			log.info("Aadhaar Link Status: " + e.getMessage());
+			out.setResponseCode("91");
+			out.setResponseDesc("No response from FI-Gateway..");
+		}
+		return out;
+	}
+
+	/**
+	 * 
+	 */
+	
+	private static byte[] createXML(AADHAARSTATUSIN in) {
+		AuthRequest authRequest = new AuthRequest();
+		TransactionInfo tran = new TransactionInfo();
+		SimpleDateFormat dateFormat = new SimpleDateFormat("MMddHHmmss");
+		String dateTime = dateFormat.format(new Date());
+
+		tran.setAcqId("200015");
+		tran.setActionDate(dateTime.substring(0, 4) + year());
+		tran.setAgentInfo(in.getAgentID() + "| | |019");
+		tran.setcA_TID(in.getTerminalID());
+		tran.setcA_ID(in.getCaID());
+		tran.setcA_TA("VISIONINDIA            PUNE         MHIN");
+		tran.setLocal_date(dateTime.substring(0, 4));
+		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+		tran.setLocal_Trans_Time(dateTime.substring(4));
+		tran.setMcc("6012");
+		tran.setPan(in.getPan());
+		tran.setPos_code("05");
+		tran.setPos_entry_mode("019");
+		tran.setProc_Code(in.getProcessingCode());
+		tran.setStan("88" + FIUtility.get4Digits());
+		tran.setrRN(FIUtility.createRRN(tran.getStan()));
+		System.out
+				.println("Hmac : " + in.getPan().substring(in.getPan().length() - 12) + "~" + tran.getrRN() + dateTime);
+		String hmac = HashGenerator.hashing(in.getPan().substring(in.getPan().length() - 12) + "~" + tran.getrRN(),
+				dateTime);
+		tran.setHmac(hmac);
+		tran.setTransm_Date_time(dateTime);
+		tran.setVendorCode("88");
+		tran.setVer("2.5");
+		in.setRrn(tran.getrRN());
+		in.setDateTime(tran.getTransm_Date_time());
+		authRequest.setTransactionInfo(tran);
+
+		Auth auth = new Auth();
+		auth.setAc("STGBOM0001");
+		auth.setHmac(in.getHmac());
+		auth.setLk("MASccGq1nAsnKtWFql39qY-bHE4Dm76bReR9EcFka4HxIwt6T7eROD0");
+
+		auth.setRc("Y");
+		auth.setSa("STGBOM0001");
+		auth.setTid("registered");
+		auth.setTxn("000501");
+		auth.setUid(in.getPan().substring(in.getPan().length() - 12));
+		auth.setVer("2.5");
+
+		Uses uses = new Uses();
+		uses.setBio("Y");
+		uses.setBt("FMR");
+		uses.setOtp("N");
+		uses.setPa("N");
+		uses.setPi("N");
+		uses.setPfa("N");
+		uses.setPin("N");
+
+		Meta meta = new Meta();
+		meta.setDc(in.getDc());
+		meta.setDpId(in.getDpID());
+		meta.setMc(in.getMc());
+		meta.setMi(in.getMi());
+		meta.setRdsId(in.getRdsID());
+		meta.setRdsVer(in.getRdsVer());
+
+		Skey skey = new Skey();
+		skey.setCi(in.getCi());
+		skey.setValue(in.getSkey());
+
+		Data data = new Data();
+		data.setType(in.getBioType());
+		data.setValue(in.getBioData());
+		auth.setUses(uses);
+		auth.setMeta(meta);
+		auth.setSkey(skey);
+		auth.setData(data);
+		authRequest.setAuth(auth);
+
+		try {
+			JAXBContext jaxbContext = JAXBContext.newInstance(AuthRequest.class);
+			Marshaller marshaller = jaxbContext.createMarshaller();
+			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			File file = new File("E://BOM/Enrollment/AadhaarStatus.xml");
+			if (file.exists())
+				file.delete();
+			file.createNewFile();
+			marshaller.marshal(authRequest, file);
+			// marshaller.marshal(authRequest, System.out);
+			byte[] alsReq = Files.readAllBytes(file.toPath());
+			return alsReq;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * @return
+	 */
+	private static String year() {
+		SimpleDateFormat formatter = new SimpleDateFormat("yy");
+		String strDate = formatter.format(new Date());
+		return strDate;
+	}
+
+	/**
+	 * @param status
+	 * @param response
+	 * @return
+	 */
+	private static AadhaarLinkStatus saveAadhaarLinkStatusRsp(AadhaarLinkStatus status, byte[] response) {
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		try {
+			File xmlFile = new File("E://BOM/Enrollment/ALS/ALSResponse_" + status.getRrn() + ".xml");
+			if (xmlFile.exists())
+				xmlFile.delete();
+			xmlFile.createNewFile();
+			FileOutputStream fileOutputStream = new FileOutputStream(xmlFile);
+			fileOutputStream.write(response);
+			fileOutputStream.close();
+			JAXBContext context = JAXBContext.newInstance(Response.class);
+			Unmarshaller unmarshaller = context.createUnmarshaller();
+			Response responseXML = (Response) unmarshaller.unmarshal(xmlFile);
+
+			Blob rsp = new SerialBlob(response);
+			status.setResponseMsg(rsp);
+			status.setRspRrn(responseXML.getTransactionInfo().getrRN());
+			status.setResponseCode(responseXML.getTransactionInfo().getResponseCode());
+			status.setResponseDesc(responseXML.getTransactionInfo().getResponseMsg());
+			if (responseXML.getTransactionInfo().getResponseCode().equals("00")) {
+				status.setBankiin(responseXML.getAuthRes().getBankiin());
+				status.setBankName(responseXML.getAuthRes().getBankName());
+				status.setMappingStatus(responseXML.getAuthRes().getMappingStatus());
+			}
+			session.beginTransaction();
+			session.saveOrUpdate(status);
+			session.getTransaction().commit();
+			// xmlFile.delete();
+		} catch (
+
+		SQLException ex) {
+			session.getTransaction().rollback();
+			ex.printStackTrace();
+		} catch (JAXBException e) {
+			e.printStackTrace();
+		} catch (Exception exception) {
+			exception.printStackTrace();
+		}
+		return status;
+	}
+
+	/**
+	 * @param reqByte
+	 * @return
+	 */
+	private static byte[] initiateRequest(byte[] billByte) {
+
+		log.info("*********Aadhaar Link Status Request ********" + new String(billByte));
+		byte[] response = null;
+		try {
+			SSLContextBuilder builder = new SSLContextBuilder();
+			builder.loadTrustMaterial(null, new TrustStrategy() {
+				@Override
+				public boolean isTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+					return true;
+				}
+			});
+
+			SSLConnectionSocketFactory sslSF = new SSLConnectionSocketFactory(builder.build(),
+					NoopHostnameVerifier.INSTANCE);
+			HttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslSF).build();
+
+			HttpEntity entity = MultipartEntityBuilder.create()
+					.addBinaryBody("req.txt", billByte, ContentType.MULTIPART_FORM_DATA, "req.txt").build();
+			HttpPost httpPost = new HttpPost("http://125.18.108.188:7003/servlet/AadharLinkingStatus");
+			httpPost.setEntity(entity);
+			HttpResponse httpResponse = httpClient.execute(httpPost);
+
+			HttpEntity responseEntity = httpResponse.getEntity();
+			int statusCode = httpResponse.getStatusLine().getStatusCode();
+			System.out.println("Status Code : " + statusCode);
+			if (statusCode == HttpStatus.SC_OK) {
+				String rsp = EntityUtils.toString(responseEntity, "UTF-8");
+				System.out.println("*********Response from Bank : *********" + rsp);
+				response = rsp.getBytes();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return response;
+	}
+
+	/**
+	 * @param in
+	 * @return
+	 */
+	private static AadhaarLinkStatus saveAadhaarLinkStatusReq(AADHAARSTATUSIN in, byte[] req) {
+		Session session = HibernateUtil.getSessionfactory().openSession();
+		AadhaarLinkStatus status = new AadhaarLinkStatus();
+		try {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+			String date = dateFormat.format(new Date());
+			status.setCurrentDate(dateFormat.parse(date));
+			Blob iso = new SerialBlob(req);
+			status.setRequestMsg(iso);
+			status.setPan(in.getPan());
+			status.setProcessingCode(in.getProcessingCode());
+			status.setTransactionTime(in.getDateTime());
+			status.setRrn(in.getRrn());
+			status.setAgentID(in.getAgentID());
+			session.beginTransaction();
+			session.saveOrUpdate(status);
+			session.getTransaction().commit();
+		} catch (Exception e) {
+			log.error(e);
+			e.printStackTrace();
+			session.getTransaction().rollback();
+		} finally {
+			session.close();
+		}
+		return status;
+	}
+
+}

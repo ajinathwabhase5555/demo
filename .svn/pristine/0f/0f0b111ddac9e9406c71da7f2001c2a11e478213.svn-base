@@ -1,0 +1,78 @@
+/**
+ * 
+ */
+package com.bomweb.service.model;
+
+/**
+ * @author SACHIN
+ *
+ */
+public class DualAuthIn {
+	private String processingCode;
+	private String transactionDateTime;
+	private String rrn;
+	private String terminalID;
+	private String agentID;
+	private String accountNo;
+	private byte[] reqByte;
+//	private String cifNo;      // Second Leg
+//	private String schemeCode; // Second Leg
+//	private String customerName;
+	
+	public String getRrn() {
+		return rrn;
+	}
+
+	public void setRrn(String rrn) {
+		this.rrn = rrn;
+	}
+
+	public String getAccountNo() {
+		return accountNo;
+	}
+
+	public void setAccountNo(String accountNo) {
+		this.accountNo = accountNo;
+	}
+
+	public String getProcessingCode() {
+		return processingCode;
+	}
+
+	public void setProcessingCode(String processingCode) {
+		this.processingCode = processingCode;
+	}
+
+	public String getTransactionDateTime() {
+		return transactionDateTime;
+	}
+
+	public void setTransactionDateTime(String transactionDateTime) {
+		this.transactionDateTime = transactionDateTime;
+	}
+
+	public String getTerminalID() {
+		return terminalID;
+	}
+
+	public void setTerminalID(String terminalID) {
+		this.terminalID = terminalID;
+	}
+
+	public String getAgentID() {
+		return agentID;
+	}
+
+	public void setAgentID(String agentID) {
+		this.agentID = agentID;
+	}
+
+	public byte[] getReqByte() {
+		return reqByte;
+	}
+
+	public void setReqByte(byte[] reqByte) {
+		this.reqByte = reqByte;
+	}
+
+}

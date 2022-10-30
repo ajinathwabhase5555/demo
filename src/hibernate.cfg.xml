@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+		"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+		"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+	<session-factory>
+ <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver.</property>
+		<property name="hibernate.connection.username">root</property>
+		<property name="hibernate.connection.password">root</property>
+		<property name="hibernate.connection.url">jdbc:mysql://localhost:3306/MHBNK</property>
+		<property name="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</property>
+		<property name="hbm2ddl.auto">update</property>
+		<property name="hibernate.show_sql">true</property>
+		<mapping class="com.bomweb.model.OFFUSTransaction" />
+		<mapping class="com.bomweb.model.ONUSTransaction" />
+		<mapping class="com.bomweb.model.EkycLog" />
+		<mapping class="com.bomweb.model.CustomerEnrollment" />
+		<mapping class="com.bomweb.model.InsuranceCifEnq" />
+		<mapping class="com.bomweb.model.InsuranceEnq" />
+		<mapping class="com.bomweb.model.InsuranceRegistration" />
+		<mapping class="com.bomweb.model.RupayTransaction" />
+		<mapping class="com.bomweb.model.FetchBill" />
+		<mapping class="com.bomweb.model.PayBill" />
+		<mapping class="com.bomweb.model.PaymentStatus"/>
+		<mapping class="com.bomweb.model.AadhaarLinkStatus"/>
+		<mapping class="com.bomweb.model.ChequeBook"/>
+		<mapping class="com.bomweb.model.ImpsTxn"/>
+		<mapping class="com.bomweb.model.Logon"/>
+		<mapping class="com.bomweb.model.NeftTxn"/>
+		<mapping class="com.bomweb.model.ONUSTransactionXML"/>
+		<mapping class="com.bomweb.model.OFFUSTransactionXML"/>
+		<mapping class="com.bomweb.model.EkycLogXML"/>
+	</session-factory>
+</hibernate-configuration>
